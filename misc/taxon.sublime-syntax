@@ -1,0 +1,27 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+file_extensions:
+  - taxon
+scope: text.taxon
+contexts:
+  main:
+    - match: "#"
+      push:
+        - meta_scope: comment
+        - match: $
+          pop: true
+    - match: ^\t{0,8}[^#\t*~]+
+      scope: keyword
+    - match: ^\t{9,14}[^#\t*~]+
+      scope: variable.parameter
+    - match: ^\t{15,22}[^#\t*~]+
+      scope: storage.type
+    - match: ^\t{23,25}[^#\t*~]+
+      scope: entity.name.class
+    - match: ^\t{26,28}[^#\t*~]+
+      scope: constant.numeric
+    - match: ^\t{29,32}[^#\t*~]+
+      scope: string
+    - match: "[*~]"
+      scope: keyword

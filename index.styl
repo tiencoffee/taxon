@@ -1,0 +1,140 @@
+body
+	margin 0
+	font-family "Tahoma"
+img:not([src])
+	display none !important
+::-webkit-scrollbar
+	-webkit-appearance none
+	background #2b3b44
+::-webkit-scrollbar-thumb
+	background #3b4b54
+[hidden]
+	display none !important
+.line
+	height 18px
+	font-family "DejaVu Sans Mono"
+.lineFind
+	background #3b4b54
+.node
+	margin-left 6px
+	display inline-block
+	font-family "Tahoma"
+	vertical-align middle
+.text
+	margin-left 8px
+	font-size 13px
+	color #888
+.img
+	min-width 4px
+	min-height 4px
+	max-width 16px
+	max-height 16px
+	margin-left 8px
+	border-radius 3px
+	vertical-align middle
+	background #fff
+.life
+	color #d13913
+.domain
+	color #d13913
+.kingdom
+	color #db3737
+.phylum
+	color #db2c6f
+.class
+	color #d9822b
+.order
+	color #00b3a4
+.family
+	color #9bbf30
+.tribe
+	color #c04dd5
+.genus
+	color #d4ad5a
+.species
+	font-weight normal
+	color #ced9e0
+.subspecies
+	font-weight normal
+	color #ced9e0
+#presEl
+	position fixed
+	left 0
+	top 0
+	width 100%
+	height 100%
+	margin 0
+	font-size 15px
+	white-space pre
+	cursor default
+#findEl
+	position fixed
+	top 0
+	right 0
+	width 260px
+	padding 8px 12px
+	border-radius 3px
+	display flex
+	background #fff
+#findInputEl
+	margin-right 16px
+	border 0
+	flex-grow 1
+	outline 0
+#findTextEl
+	font-size 13px
+	color #888
+#popupBody
+	max-width min-content
+	padding 8px
+	border-radius 6px
+	display flex
+	flex-direction column
+	font-family "Tahoma"
+	font-size 15px
+	text-align center
+	background #fff
+	pointer-events none
+.popupTwoImg
+	.popupImg
+		max-width 280px
+		max-height 220px
+#popupName
+	margin-bottom 8px
+	display block
+	font-size 15px
+	font-weight bold
+	white-space nowrap
+#popupText
+	margin -6px 0 4px
+	white-space nowrap
+	color #333
+#popupGenders
+	display flex
+	justify-content center
+	align-items center
+.popupGender
+	&:nth-child(2)
+		margin-left 4px
+.popupGenderCaptn
+	margin-top 2px
+	font-size 13px
+	color #333
+.popupImgs
+	display flex
+	flex-direction column
+.popupImg
+	max-width 320px
+	max-height 240px
+	border-radius 6px
+	background #fff
+.popupCaptn
+	margin-top 2px
+	color #333
+	font-size 13px
+#popupSummary
+	margin-top 4px
+	font-size 13px
+	> p
+		margin 0
+		text-align justify

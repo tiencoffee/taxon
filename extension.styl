@@ -1,0 +1,253 @@
+body
+	&:not(.tQj5Y):not(.srp):not(.vasq)
+		font-size 15px !important
+		background #fff !important
+		cursor default
+body, h1, h2, h3, h4, h5, h6
+	font-family "Roboto" !important
+::selection
+	background-color #07d
+	color #fff
+::-webkit-scrollbar
+	width 18px
+	height 18px
+	-webkit-appearance none
+::-webkit-scrollbar-track
+	background #fff
+::-webkit-scrollbar-thumb
+	border solid 3px #fff
+	border-radius 16px
+	background #07d
+	&:hover
+		background #08f
+	&:active
+		background #06b
+
+.row
+	display flex
+	flex-direction row
+.column
+	display flex
+	flex-direction column
+.col
+	flex-grow 1
+.col-0
+	flex-shrink 0
+for i in range(1, 12)
+	val = floor(i / 12 * 100%, 2)
+	.row > .col-{i}
+		width val
+	.column > .col-{i}
+		height val
+	val = floor(100% / i, 2)
+	.row-{i}
+		display grid
+		grid-template-columns repeat(i,1fr)
+		> .col-{i}
+			grid-column span (i)
+.full
+	{$$full}
+.wrap
+	flex-wrap wrap
+.nowrap
+	flex-wrap nowrap
+for dir in row column
+	.{dir}
+		prop = dir is row ? "justify-content" : "align-items"
+		&.f-start
+			{prop} flex-start
+		&.f-center
+			{prop} center
+		&.f-end
+			{prop} flex-end
+		prop = dir is row ? "align-items" : "justify-content"
+		&.f-top
+			{prop} flex-start
+		&.f-middle
+			{prop} center
+		&.f-bottom
+			{prop} flex-end
+.f-between
+	justify-content space-between
+.f-around
+	justify-content space-around
+.f-evenly
+	justify-content space-evenly
+.f-stretch
+	align-items stretch
+props = {p: padding, m: margin}
+sides = {t: top, r: right, b: bottom, l: left}
+sizes = 32px 16px 8px 4px 2px 0
+for p, prop in props
+	for size, i in sizes
+		i = 5 - i
+		.{p}-{i}
+			{prop} size
+		.-{p}-{i}
+			{prop} -(size)
+		.{p}x-{i}
+			{prop}-left size
+			{prop}-right size
+		.{p}y-{i}
+			{prop}-top size
+			{prop}-bottom size
+		.-{p}x-{i}
+			{prop}-left -(size)
+			{prop}-right -(size)
+		.-{p}y-{i}
+			{prop}-top -(size)
+			{prop}-bottom -(size)
+		for s, side in sides
+			.{p}{s}-{i}
+				{prop}-{side} size
+			if p is m and i
+				.-{p}{s}-{i}
+					{prop}-{side} -(size)
+for pos in absolute relative fixed
+	.{pos}
+		position pos
+for dis in block inline-block inline flex inline-flex
+	.{dis}
+		display dis
+.w-100
+	width 100%
+.h-100
+	height 100%
+.hidden, [hidden]
+	display none
+for align in left center right justify
+	.text-{align}
+		text-align align
+.text-nowrap
+	white-space nowrap
+	word-break break-word
+.text-truncate
+	overflow hidden
+	text-overflow ellipsis
+	white-space nowrap
+	word-break break-word
+.scroll
+	overflow auto
+.scroll-y
+	overflow-x hidden
+	overflow-y auto
+.noscroll
+	overflow hidden
+.event
+	pointer-events auto
+.noevent
+	pointer-events none
+.round
+	border-radius 8px
+.text-green
+	color #2a3
+.text-red
+	color #f43
+.bg-white
+	background #fff
+
+.mw-body-content
+	font-size 15px !important
+.mwe-popups
+	animation-duration .15s
+	pointer-events none
+.firstHeading> *
+	pointer-events none
+.mediawiki
+	#mw-page-base
+	#mw-panel
+	#mw-head
+	#footer
+	#catlinks
+	#mw-AnonymousI18N-suggest
+	#siteSub
+	.mbox-small
+	.metadata
+	.navbox
+	.mw-mmv-download-dialog
+	.reflist
+	.navbox + p
+	.reference
+	.mw-editsection
+	table[role=presentation]
+		display none !important
+	#content.mw-body
+		max-width 800px
+		margin 8px auto
+		border 0
+		border-radius 16px
+	.infobox.biota
+		padding 8px
+		border-radius 8px
+		th
+			border-radius 8px
+	img
+	video
+	table
+	#toc
+	.thumbinner
+		border-radius 8px
+	.mw-mmv-wrapper
+		img
+			border-radius 0
+	#content
+		padding 8px
+	#toc
+		position fixed
+		left 8px
+		top 52px
+		width 200px
+		max-height 100%
+		border 0
+		overflow auto
+.pointer-events-none
+	pointer-events none !important
+.taxonRightSide
+	position fixed
+	top 0
+	right 0
+	width 230px
+	height 100%
+	border-radius 8px
+	background #fff
+.taxonSummaryTitle
+	align-self stretch
+.taxonSummaryExtract
+	align-self stretch
+	text-align justify
+.taxonSummaryImg
+	max-width 100%
+	max-height 180px
+	border-radius 8px
+.taxonLoader
+	width 8px
+	height 8px
+	border solid 4px #ccc
+	border-top-color #607d8b
+	border-radius 50%
+	display inline-block
+	vertical-align middle
+	animation taxonLoader 1s linear infinite
+@keyframes taxonLoader
+	from
+		transform rotate(0deg)
+	to
+		transform rotate(360deg)
+.taxonNotify
+	position fixed
+	left 50%
+	top 8px
+	max-width 50%
+	padding 8px 16px
+	border-radius 8px
+	display inline-block
+	background #111
+	color #fff
+	transform translateX(-50%)
+	animation taxonNotify .15s forwards
+	z-index 999999
+@keyframes taxonNotify
+	from
+		transform scale(.9)
+	to
+		transform scale(1)
