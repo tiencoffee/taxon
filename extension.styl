@@ -78,6 +78,9 @@ for dir in row column
 props = {p: padding, m: margin}
 sides = {t: top, r: right, b: bottom, l: left}
 sizes = 32px 16px 8px 4px 2px 0
+for size, i in sizes
+	.gap-{i}
+		grid-gap size
 for p, prop in props
 	for size, i in sizes
 		i = 5 - i
@@ -212,6 +215,8 @@ for align in left center right justify
 	background #fff
 .taxonSummaryTitle
 	align-self stretch
+	> b
+		display block
 .taxonSummaryExtract
 	align-self stretch
 	text-align justify

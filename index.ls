@@ -38,7 +38,7 @@ for line in data
 	ref[]3.push node
 	refs.push node
 
-addNode = (node, parentLv, parentName, extinct, chrs, first, last, nearExtinct, line) !~>
+addNode = (node, parentLv, parentName, extinct, chrs, first, last, nextSiblExtinct) !~>
 	[lv, name, sym, childs, text, imgs] = node
 	extinct = yes if sym is \*
 	if parentLv >= 0
@@ -67,11 +67,12 @@ addNode = (node, parentLv, parentName, extinct, chrs, first, last, nearExtinct, 
 	lines.push line
 	if childs
 		line.childs = []
-		chrs += "  "repeat(lvRange) + (last and "  " or (if extinct or nearExtinct => " ¦" else " │"))
+		chrs += "  "repeat(lvRange) + (last and "  " or (if extinct or nextSiblExtinct => " ¦" else " │"))
 		if (lv < 31 or lv > 34) and name not in [\? " "]
 			parentName = fullName or name
+		lastIndex = childs.length - 1
 		for child, i in childs
-			addNode child, lv, parentName, extinct, chrs, not i, i is childs.length - 1, childs[i + 1]?2
+			addNode child, lv, parentName, extinct, chrs, not i, i is lastIndex, childs[i + 1]?2
 
 addNode tree, -1 "" no "" yes yes
 document.body.style.height = lines.length * 18 + \px
@@ -195,14 +196,14 @@ App =
 			m.mount popupEl
 
 	clickNode: (line) !->
-		lang = event.altKey and \vi or \en
-		window.open "https://#lang.wikipedia.org/wiki/#{line.fullName or line.name}" \_blank
+		unless line.name in ["" \?]
+			lang = event.altKey and \vi or \en
+			open "https://#lang.wikipedia.org/wiki/#{line.fullName or line.name}" \_blank
 
 	contextmenuNode: (line, event) !->
 		event.preventDefault!
-		setTimeout window.open, 200,
-			"https://google.com/search?tbm=isch&q=#{line.fullName or line.name}" \_blank
-		fetch "gotoline/#{line.index}/#{line.name.length}"
+		unless line.name in ["" \?]
+			open "https://google.com/search?tbm=isch&q=#{line.fullName or line.name}" \_blank
 
 	find: (val) !->
 		if val = val.trim!toLowerCase!
