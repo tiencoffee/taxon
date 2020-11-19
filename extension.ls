@@ -17,55 +17,55 @@ hasSubspeciesContent = no
 mouseRightDownAction = null
 
 clsData =
-	["vực|siêu giới|domain|super-?kingdom" "" ""]
-	["giới|kingdom" "" ""]
-	["phân giới|sub-?kingdom" "" ""]
-	["thứ giới|infra-?kingdom" "" ""]
-	["liên ngành|siêu ngành|super-?phylum" "" ""]
-	["ngành|phylum" \KeyN \phylum]
-	["phân ngành|sub-?phylum" "" ""]
-	["thứ ngành|infra-?phylum" "" ""]
-	["tiểu ngành|micro-?phylum" "" ""]
-	["liên lớp|siêu lớp|super-?class" \KeyS \superclass]
-	["lớp|class" \KeyX \class]
-	["phân lớp|sub-?class" \KeyD \subclass]
-	["thứ lớp|infra-?class" "" ""]
-	["tiểu lớp|parv-?class" "" ""]
-	["đoàn|legion" "" ""]
-	["liên đội|super-?cohort" "" ""]
-	["đội|cohort" "" ""]
-	["tổng bộ|đại bộ|magn-?order" "" ""]
-	["liên bộ|siêu bộ|super-?order" \KeyG \superorder]
-	["bộ|order" "KeyB" "order"]
-	["phân bộ|sub-?order" \KeyJ \suborder]
-	["thứ bộ|infra-?order" "" ""]
-	["tiểu bộ|parv-?order" "" ""]
-	["liên họ|siêu họ|super-?family" \KeyY \superfamily]
-	["họ|family" \KeyH \family]
-	["phân họ|sub-?family" \KeyU \subfamily]
-	["liên tông|super-?tribe" \Digit5 \supertribe]
-	["tông|tribe" \KeyT \tribe]
-	["phân tông|sub-?tribe" \Digit6 \subtribe]
-	["chi|genus" \KeyC \genus]
-	["phân chi|sub-?genus" \KeyF \subgenus]
-	["mục|section" "" ""]
-	["loạt|series" "" ""]
-	["liên loài|super-?species" "" ""]
-	["loài|species" \KeyL \species]
-	["phân loài|sub-?species" \KeyP \subspecies]
-	["thứ|variety" "" ""]
-	["dạng|form" "" ""]
+	["vực|siêu giới|domain|super-?kingdom" "" "",,]
+	["giới|kingdom" "" "",,]
+	["phân giới|sub-?kingdom" "" "",,]
+	["thứ giới|infra-?kingdom" "" "",,]
+	["liên ngành|siêu ngành|super-?phylum" "" "",,]
+	["ngành|phylum" \KeyN \phylum,,]
+	["phân ngành|sub-?phylum" "" "",,]
+	["thứ ngành|infra-?phylum" "" "",,]
+	["tiểu ngành|micro-?phylum" "" "",,]
+	["liên lớp|siêu lớp|super-?class" \KeyS \superclass,,]
+	["lớp|class" \KeyX \class,,]
+	["phân lớp|sub-?class" \KeyD \subclass,,]
+	["thứ lớp|infra-?class" "" "",,]
+	["tiểu lớp|parv-?class" "" "",,]
+	["đoàn|legion" "" "",,]
+	["liên đội|super-?cohort" "" "",,]
+	["đội|cohort" "" "",,]
+	["tổng bộ|đại bộ|magn-?order" "" "",,]
+	["liên bộ|siêu bộ|super-?order" \KeyG \superorder,,]
+	["bộ|order" "KeyB" "order",,]
+	["phân bộ|sub-?order" \KeyJ \suborder,,]
+	["thứ bộ|infra-?order" "" "",,]
+	["tiểu bộ|parv-?order" "" "",,]
+	["liên họ|siêu họ|super-?family" \KeyY \superfamily \oidea]
+	["họ|family" \KeyH \family \idae]
+	["phân họ|sub-?family" \KeyU \subfamily \inae]
+	["liên tông|super-?tribe" \Digit5 \supertribe,,]
+	["tông|tribe" \KeyT \tribe \ini]
+	["phân tông|sub-?tribe" \Digit6 \subtribe,,]
+	["chi|genus" \KeyC \genus,,]
+	["phân chi|sub-?genus" \KeyF \subgenus,,]
+	["mục|section" "" "",,]
+	["loạt|series" "" "",,]
+	["liên loài|super-?species" "" "",,]
+	["loài|species" \KeyL \species,,]
+	["phân loài|sub-?species" \KeyP \subspecies,,]
+	["thứ|variety" "" "",,]
+	["dạng|form" "" "",,]
 for cls, i in clsData
-	cls.3 = i
-	cls.4 = ///^(?:#{cls.0}):?\s+///i
-	cls.5 = ///^(?:#{cls.0})$///i
+	cls.4 = i
+	cls.5 = ///^(?:#{cls.0}):?\s+///i
+	cls.6 = ///^(?:#{cls.0})$///i
+	cls.7 = cls.3 and ///^[A-Z][a-z]#{cls.3}$///
 regexSeparates =
 	/[\r\n]+/
 	/[\r\n]+|\s–\s|\s\-\s/
 regexStartsWithClsStr = clsData.map (.0) .join \|
 regexStartsWithCls = ///^(?:#regexStartsWithClsStr):?\s+///i
 regexExtinct = /\b(?:tuyệt chủng|extinct|fossil)\b|†/i
-regexExclCode = /(Control|Shift|Alt|Meta)(Left|Right)|(Caps|Num)Lock|Tab/
 regexSeparate = regexSeparates[+(hostname is \species.wikimedia.org)]
 regexSubspecies = ///
 	(?<=^[A-Z]\.\s*[a-z-]+\s)[a-z-]+|
@@ -149,10 +149,10 @@ selectText = (node) !->
 checkNotFocusInput = ->
 	document.activeElement.localName isnt /^(?:input|textarea)$/
 
-keyup = (opts) !->
-	if typeof opts is \string
-		opts = code: opts
-	evt = new KeyboardEvent \keyup opts
+keypress = (codeKey, initEvt) !->
+	opts = code: codeKey
+	opts <<< initEvt
+	evt = new KeyboardEvent \keypress opts
 	dispatchEvent evt
 
 markEl = (el, markOutline = 'solid 2px #07d') !->
@@ -302,14 +302,13 @@ closeTab = !->
 
 window.addEventListener \keydown (event) !->
 	return if event.repeat
-	unless regexExclCode.test event.code
-		{code} := event
+	{code} := event
 
-window.addEventListener \keyup (event) !->
+window.addEventListener \keypress (event) !->
 	if preventCode
 		code := void
 		preventCode := no
-	else unless event.isTrusted or regexExclCode.test event.code
+	else if not event.isTrusted
 		{code} := event
 	{ctrlKey, shiftKey, altKey, metaKey} = event
 	noModf = !ctrlKey and !shiftKey and !altKey and !metaKey
@@ -322,8 +321,6 @@ window.addEventListener \keyup (event) !->
 		if event.shiftKey
 			if isKeyDownClsData
 				hideChildUl!
-			else return
-	# return if event.altKey
 	sel := (getSelection! + "")trim!
 	if checkNotFocusInput!
 		if isWiki
@@ -331,21 +328,19 @@ window.addEventListener \keyup (event) !->
 				if not event.ctrlKey and document.activeElement is document.body
 					if isKeyDownClsData
 						data := ""
-						row = sel
-						if navigator.userAgent.includes \Edge
-							row .= replace /([a-z])([A-Z])/ "$1\n$2"
-						row .= split regexSeparate
+						row = sel.split regexSeparate
 						lv = void
 						unless event.isTrusted
 							if col = row.0
 								if code in <[KeyL KeyP Semicolon]>
 									switch
-									| clsData.find (.4.test col)
-										lv = that.3
-										code := ""
+									| clsData.find (.5.test col)
+										lv = that.4
 									| /^([A-Z]\.\s?[a-z]\.\s[a-z-]{2,}|[A-Z][a-z]+\s[a-z]{2,}\s[a-z-]{2,})/test col
 										code := \KeyP
-						unless lv?
+						if lv?
+							code := ""
+						else
 							lv = clsData.findIndex (.1 is code)
 							lv = 0 if lv < 0
 						lvTab = \\t * lv
@@ -383,9 +378,14 @@ window.addEventListener \keyup (event) !->
 						data := (\\n + data)
 							.replace /[\r\n]?\t*\bnull\b/g ""
 							.replace /\ /g " "
-						if code is \KeyL
-							unless data.trim!
-								keyup \/
+						unless event.isTrusted
+							if code is \KeyL
+								unless data.trim!
+									col = row.0
+									if clsData.find (.7?test col)
+										keypress that.1
+									else
+										keypress \KeyC
 					else
 						switch code
 						| \KeyQ
@@ -467,33 +467,47 @@ window.addEventListener \keyup (event) !->
 								break
 						if el
 							selectText el
-							keyup \KeyL
+							keypress \KeyL
 							markEl el
 					else if el = document.querySelector 'table.infobox.biota .species'
 						selectText el
-						keyup \KeyL
+						keypress \KeyL
 						markEl el
 			| \Digit2 \Digit3
 				if noModf
-					el = document.querySelector \.mw-parser-output
-					h3s = el.querySelectorAll ":scope> h#{code.5}"
-					text = ""
-					for h3 in h3s
-						continue if h3.querySelector \#References
-						ul = h3
-						until ul.localName is \ul
-							ul .= nextElementSibling
-						text += \\n + "\t"repeat(29) + h3.children.0.innerText
-						for li in ul.children
-							species = li.querySelector \i .innerText.split " " .1
-							text += \\n + "\t"repeat(34) + species
-							if ul2 = li.querySelector \ul
-								text += \\n + "\t"repeat(35) + species
-								for li2 in ul2.children
-									subspecies = li2.querySelector \i .innerText.split " " .2
-									unless species is subspecies
-										text += \\n + "\t"repeat(35) + subspecies
-					copy text
+					if h3s = document.querySelectorAll ".mw-parser-output> h#{code.5}"
+						text = ""
+						for h3 in h3s
+							ul = h3
+							do
+								ul .= nextElementSibling
+							until ul.localName is \ul
+							text += \\n + "\t"repeat(29) + (h3.innerText is /[A-Z][a-z]+/)0
+							for li in ul.children
+								species = li.querySelector \i .innerText.split " " .1
+								text += \\n + "\t"repeat(34) + species
+								if ul2 = li.querySelector \ul
+									text += \\n + "\t"repeat(35) + species
+									for li2 in ul2.children
+										subspecies = li2.querySelector \i .innerText.split " " .2
+										unless species is subspecies
+											text += \\n + "\t"repeat(35) + subspecies
+						copy text
+			| \Digit4
+				if noModf
+					if el = document.querySelector '.mw-parser-output> h2'
+						text = ""
+						do
+							switch el.localName
+							| \h2
+								text += \\n + "\t"repeat(25) + (el.innerText is /[A-Z][a-z]+/)0
+							| \h3
+								text += \\n + "\t"repeat(27) + (el.innerText is /[A-Z][a-z]+/)0
+							| \ul
+								for li in el.children
+									text += \\n + "\t"repeat(29) + (li.innerText is /[A-Z][a-z]+/)0
+						while el .= nextElementSibling
+						copy text
 			| \KeyO
 				text = await navigator.clipboard.readText!
 				link = "https://en.wikipedia.org/wiki/#text"
@@ -552,7 +566,7 @@ window.addEventListener \keyup (event) !->
 				if noModf
 					cropper.destroy!
 					cropper := null
-	code := void unless regexExclCode.test code
+	code := void
 	buttons := 0
 
 window.addEventListener \mousedown (event) !->
@@ -627,21 +641,13 @@ window.addEventListener \mousedown (event) !->
 									preventCode := yes
 								copy prefix + imgUrl + subfix
 							markEl target
-				| target.closest \.binomial
-					selectText target
-					keyup \KeyL
-					markEl target
-				| target.closest \.trinomial
-					selectText target
-					keyup \KeyP
-					markEl target
 				| el2 = target.closest closestCls
 					code2 = clsData.find (.2 is el2.className) .1
 					selectText target
-					keyup code2
+					keypress code2
 					markEl target
 				| sel
-					keyup \KeyL
+					keypress \KeyL
 				| localName is \li
 					if event.altKey
 						mouseRightDownAction := [\altLis target]
@@ -661,7 +667,7 @@ window.addEventListener \mousedown (event) !->
 									prevElSibl.previousElementSibling?querySelector \#Genera
 						if cond
 							code2 = \KeyC
-						keyup code2
+						keypress code2
 						markEl target.parentElement
 						# fetchDetails target.parentElement
 				| target.closest \.infobox.biota
@@ -678,12 +684,12 @@ window.addEventListener \mousedown (event) !->
 								.toLowerCase!
 								.replace /[^a-z]/g ""
 							if rank
-								if cls = clsData.find (.5.test rank)
+								if cls = clsData.find (.6.test rank)
 									code2 = cls.1
 						if td.querySelector \a
 							td = that
 						selectText td
-						keyup code2
+						keypress code2
 						markEl td
 				| localName in <[th td]> and (table = target.closest \table)
 					if event.ctrlKey =>
@@ -711,12 +717,12 @@ window.addEventListener \mousedown (event) !->
 								.join ""
 						table.replaceWith ul
 						selectText ul
-						keyup code || \KeyL
+						keypress code || \KeyL
 						markEl ul
 						# fetchDetails ul
 				| el = target.closest '#firstHeading,b,h1,h2,h3,h4,h5,h6'
 					selectText el
-					keyup \KeyQ
+					keypress \KeyQ
 					markEl el
 , yes
 
@@ -819,6 +825,12 @@ window.addEventListener \load !->
 	switch
 	| isWiki
 		if isWikipedia
+			if el = document.querySelector \#References
+				el .= parentElement
+				do
+					el2 = el.nextElementSibling
+					el.remove!
+				while el = el2
 			if langViEl := document.querySelector 'a.interlanguage-link-target[hreflang=vi]'
 				page = (langViEl.href is /[^\/]+$/)0
 			if wikiCommonEl := document.querySelector '.wb-otherproject-commons> a'

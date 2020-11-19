@@ -3,7 +3,7 @@
 	"version": "0.1",
 	"manifest_version": 2,
 	"author": "tiencoffee",
-	"description": "Taxonomy",
+	"description": "taxon",
 	"content_scripts": [{
 		"matches": [
 			"*://*.wikipedia.org/*",

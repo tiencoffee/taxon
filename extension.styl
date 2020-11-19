@@ -1,12 +1,11 @@
 body
 	&:not(.tQj5Y):not(.srp):not(.vasq)
 		font-size 15px !important
-		background #fff !important
 		cursor default
 body, h1, h2, h3, h4, h5, h6
-	font-family "Roboto" !important
+	font-family "Helvetica Neue" !important
 ::selection
-	background-color #07d
+	background #07d
 	color #fff
 ::-webkit-scrollbar
 	width 18px
@@ -149,14 +148,19 @@ for align in left center right justify
 .bg-white
 	background #fff
 
+body
+.mw-body
+	background #f8f9fa !important
+p
+table
 .mw-body-content
 	font-size 15px !important
-.mwe-popups
-	animation-duration .15s
-	pointer-events none
-.firstHeading> *
-	pointer-events none
 .mediawiki
+	.mwe-popups
+		animation-duration .15s
+		pointer-events none
+	.firstHeading> *
+		pointer-events none
 	#mw-page-base
 	#mw-panel
 	#mw-head
@@ -198,7 +202,7 @@ for align in left center right justify
 	#toc
 		position fixed
 		left 8px
-		top 52px
+		top 0
 		width 200px
 		max-height 100%
 		border 0
@@ -212,7 +216,7 @@ for align in left center right justify
 	width 230px
 	height 100%
 	border-radius 8px
-	background #fff
+	background #f8f9fa
 .taxonSummaryTitle
 	align-self stretch
 	> b
