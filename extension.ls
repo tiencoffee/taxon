@@ -59,13 +59,14 @@ for cls, i in clsData
 	cls.4 = i
 	cls.5 = ///^(?:#{cls.0}):?\s+///i
 	cls.6 = ///^(?:#{cls.0})$///i
-	cls.7 = cls.3 and ///^[A-Z][a-z]#{cls.3}$///
+	cls.7 = cls.3 and ///^[A-Z][a-z]+#{cls.3}($|\b)///
 regexSeparates =
 	/[\r\n]+/
 	/[\r\n]+|\s–\s|\s\-\s/
 regexStartsWithClsStr = clsData.map (.0) .join \|
 regexStartsWithCls = ///^(?:#regexStartsWithClsStr):?\s+///i
 regexExtinct = /\b(?:tuyệt chủng|extinct|fossil)\b|†/i
+regexExclCode = /(Control|Shift|Alt|Meta)(Left|Right)|(Caps|Num)Lock|Tab/
 regexSeparate = regexSeparates[+(hostname is \species.wikimedia.org)]
 regexSubspecies = ///
 	(?<=^[A-Z]\.\s*[a-z-]+\s)[a-z-]+|
@@ -131,69 +132,77 @@ copy = (text) ->
 		selection.empty!
 		navigator.clipboard.writeText text
 
-selectText = (node) !->
-	document.activeElement.blur!
-	if document.body.createTextRange
-		range = that!
-			..moveToElementText node
-			..select!
-	else if getSelection
-		range = document.createRange!
-			..selectNodeContents node
-		selection
-			..removeAllRanges!
-			..addRange range
-	else
-		console.warn "Trình duyệt không hỗ trợ Selection."
-
 checkNotFocusInput = ->
 	document.activeElement.localName isnt /^(?:input|textarea)$/
 
-keypress = (codeKey, initEvt) !->
+keyup = (codeKey, initEvt) !->
 	opts = code: codeKey
 	opts <<< initEvt
-	evt = new KeyboardEvent \keypress opts
+	evt = new KeyboardEvent \keyup opts
 	dispatchEvent evt
 
 markEl = (el, markOutline = 'solid 2px #07d') !->
-	unless markedEls.includes el
-		{outline, outlineOffset} = el.style
-		el.style
-			..outline = markOutline
-			..outlineOffset = \-1px
-		markedEls.push el
-		setTimeout !~>
+	if el
+		unless markedEls.includes el
+			{outline, outlineOffset} = el.style
 			el.style
-				..outline = outline
-				..outlineOffset = outlineOffset
-			markedEls.splice markedEls.indexOf(el), 1
-		, 400
+				..outline = markOutline
+				..outlineOffset = \-1px
+			markedEls.push el
+			setTimeout !~>
+				el.style
+					..outline = outline
+					..outlineOffset = outlineOffset
+				markedEls.splice markedEls.indexOf(el), 1
+			, 400
 
-hideChildUl = (el = selEl) !->
+hideUlInLis = (el = selEl) !->
 	el?parentElement.querySelectorAll \ul .forEach (.hidden = yes)
 
-showChildUl = (el = selEl) !->
+showUlInLis = (el = selEl) !->
 	el?parentElement.querySelectorAll \ul .forEach (.hidden = no)
 
-keepITagUl = (el = selEl) !->
+toggleSanitizeLis = (el = selEl) !->
 	if el
 		ul = el.parentElement
-		prop = \$_Taxonomy_keepITagUl_innerHTML
+		prop = \$_taxon_toggleSanitizeLis_innerHTML
 		if ul[prop]
 			ul.innerHTML = that
 			delete ul[prop]
 		else
 			ul[prop] = ul.innerHTML
 			for li in ul.children
-				text = li.querySelector \i .innerText
-				if regexExtinct.test li.innerText
+				isExtinct = regexExtinct.test li.innerText
+				if small = li.querySelector \small
+					small.remove!
+				if li.querySelector \i
+					text = that.innerText
+				else
+					text = li.innerText
+				if isExtinct
 					text += " †"
 				li.innerText = text
 			selectText ul
 
+selectText = (node) !->
+	if node
+		document.activeElement.blur!
+		if document.body.createTextRange
+			range = that!
+				..moveToElementText node
+				..select!
+		else if getSelection
+			range = document.createRange!
+				..selectNodeContents node
+			selection
+				..removeAllRanges!
+				..addRange range
+		else
+			console.warn "Trình duyệt không hỗ trợ Selection."
+
 fetchDetails = (ul) !->
-	unless ul.TaxonomyDetails
-		ul.TaxonomyDetails = yes
+	unless ul.taxonDetails
+		ul.taxonDetails = yes
 		for li in ul.children
 			if a = li.querySelector ':scope> i> a'
 				unless a.classList.contains \new
@@ -205,11 +214,11 @@ fetchDetails = (ul) !->
 						(await fetch "https://vi.wikipedia.org/api/rest_v1/page/summary/#q")json!
 						(await fetch "https://en.wikipedia.org/api/rest_v1/page/summary/#q")json!
 					]
-					li.classList.add \TaxonomyDetails
+					li.classList.add \taxonDetails
 					li.innerHTML = """
 						<i>#{a.outerHTML}</i>
 						&nbsp;&mdash; <b>#{jsonVi.title}</b>
-						<div class="TaxonomyDetailsDesc">
+						<div class="taxonDetailsDesc">
 							<a href="https://commons.wikimedia.org/wiki/Category:#q" target="_blank">
 								<img src="#{jsonEn.thumbnail?source}">
 							</a>
@@ -244,12 +253,7 @@ createCropper = (img) !->
 		img = document.querySelectorAll \.n3VNCb
 		img .= [* is 3 and 1 or 0]
 		img.parentElement.href = \javascript:
-		blob = await (await fetch "https://cors-anywhere.herokuapp.com/#{img.src}")blob!
-		img.src = await new Promise (resolve) !~>
-			new FileReader
-				..onload = !~>
-					resolve it.target.result
-				..readAsDataURL blob
+		img.src = await (await fetch "http://localhost:8080/q/img/#{img.src}")text!
 	else if isWiki
 		document.querySelector \.mw-mmv-download-dialog ?remove!
 	if img
@@ -302,13 +306,14 @@ closeTab = !->
 
 window.addEventListener \keydown (event) !->
 	return if event.repeat
-	{code} := event
+	unless regexExclCode.test event.code
+		{code} := event
 
-window.addEventListener \keypress (event) !->
+window.addEventListener \keyup (event) !->
 	if preventCode
 		code := void
 		preventCode := no
-	else if not event.isTrusted
+	else unless event.isTrusted or regexExclCode.test event.code
 		{code} := event
 	{ctrlKey, shiftKey, altKey, metaKey} = event
 	noModf = !ctrlKey and !shiftKey and !altKey and !metaKey
@@ -320,31 +325,14 @@ window.addEventListener \keypress (event) !->
 		isKeyDownClsData = code is \Semicolon or clsData.some (.1 is code)
 		if event.shiftKey
 			if isKeyDownClsData
-				hideChildUl!
+				hideUlInLis!
 	sel := (getSelection! + "")trim!
 	if checkNotFocusInput!
 		if isWiki
 			if sel
 				if not event.ctrlKey and document.activeElement is document.body
 					if isKeyDownClsData
-						data := ""
-						row = sel.split regexSeparate
-						lv = void
-						unless event.isTrusted
-							if col = row.0
-								if code in <[KeyL KeyP Semicolon]>
-									switch
-									| clsData.find (.5.test col)
-										lv = that.4
-									| /^([A-Z]\.\s?[a-z]\.\s[a-z-]{2,}|[A-Z][a-z]+\s[a-z]{2,}\s[a-z-]{2,})/test col
-										code := \KeyP
-						if lv?
-							code := ""
-						else
-							lv = clsData.findIndex (.1 is code)
-							lv = 0 if lv < 0
-						lvTab = \\t * lv
-						for col, i in row
+						sanitizeCol = (col = "") ~>
 							col .= trim!
 							if col.match regexExtinct
 								col .= replace regexExtinct, ""
@@ -353,6 +341,26 @@ window.addEventListener \keypress (event) !->
 								isExtinct = no
 							col .= trim!replace regexStartsWithCls, ""
 							col .= replace /^"(.+)"$/, \$1
+							[col, isExtinct]
+						data := ""
+						row = sel.split regexSeparate
+						lv = void
+						unless event.isTrusted
+							if col = sanitizeCol row.0 .0
+								if code in <[KeyL KeyP Semicolon]>
+									switch
+									| clsData.find (.7?test col)
+										lv = that.4
+									| /^([A-Z]\.\s?[a-z]\.\s[a-z-]+|[A-Z][a-z]+\s[a-z]+\s[a-z-]+)/test col
+										code := \KeyP
+						if lv?
+							code := ""
+						else
+							lv = clsData.findIndex (.1 is code)
+							lv = 0 if lv < 0
+						lvTab = \\t * lv
+						for col, i in row
+							[col, isExtinct] = sanitizeCol col
 							matched = switch code
 								| \KeyP
 									col.match regexSubspecies
@@ -377,15 +385,15 @@ window.addEventListener \keypress (event) !->
 						data += row * \\n
 						data := (\\n + data)
 							.replace /[\r\n]?\t*\bnull\b/g ""
-							.replace /\ /g " "
+							.replace /\ /g " "
 						unless event.isTrusted
 							if code is \KeyL
 								unless data.trim!
-									col = row.0
+									col = sanitizeCol row.0 .0
 									if clsData.find (.7?test col)
-										keypress that.1
+										keyup that.1
 									else
-										keypress \KeyC
+										keyup \KeyC
 					else
 						switch code
 						| \KeyQ
@@ -394,22 +402,13 @@ window.addEventListener \keypress (event) !->
 								data := " # " + sel.charAt(0)toUpperCase! + sel.slice 1
 						| \Delete
 							if noModf
-								hideChildUl!
+								hideUlInLis!
 						| \Backspace
 							if noModf
-								keepITagUl!
-						| \KeyZ
-							if noModf
-								data := sel
+								toggleSanitizeLis!
 					copy data if data
 			else
 				switch code
-				| \KeyZ
-					if noModf
-						history.back!
-				| \KeyX
-					if noModf
-						history.forward!
 				| \KeyC
 					if noModf
 						if wikiCommonEl
@@ -467,11 +466,11 @@ window.addEventListener \keypress (event) !->
 								break
 						if el
 							selectText el
-							keypress \KeyL
+							keyup \KeyL
 							markEl el
 					else if el = document.querySelector 'table.infobox.biota .species'
 						selectText el
-						keypress \KeyL
+						keyup \KeyL
 						markEl el
 			| \Digit2 \Digit3
 				if noModf
@@ -516,7 +515,7 @@ window.addEventListener \keypress (event) !->
 				else
 					location.href = link
 			if shift
-				showChildUl!
+				showUlInLis!
 		else if isImgur
 			if location.pathname is \/edit
 				switch code
@@ -531,13 +530,6 @@ window.addEventListener \keypress (event) !->
 				| \KeyE
 					if noModf
 						document.querySelector \.post-image-option.help>a .click!
-			switch code
-			| \KeyZ
-				if noModf
-					history.back!
-			| \KeyW
-				if noModf
-					closeTab!
 		switch code
 		| \KeyN
 			if isGoogle
@@ -557,6 +549,8 @@ window.addEventListener \keypress (event) !->
 							type = \URL
 					if image
 						uploadImgur {image, type}
+					else
+						notify "Không có ảnh nào được chọn"
 		| \KeyK
 			if noModf
 				if confirm "Lấy token imgur mới?"
@@ -566,7 +560,19 @@ window.addEventListener \keypress (event) !->
 				if noModf
 					cropper.destroy!
 					cropper := null
-	code := void
+		| \KeyZ
+			if noModf
+				if sel
+					copy sel
+				else
+					history.back!
+		| \KeyX
+			if noModf
+				history.forward!
+		| \KeyW
+			if noModf
+				closeTab!
+	code := void unless regexExclCode.test code
 	buttons := 0
 
 window.addEventListener \mousedown (event) !->
@@ -587,7 +593,7 @@ window.addEventListener \mousedown (event) !->
 					if event.altKey
 						copy hash
 					else
-						prefix event.shiftKey and " | " or " # "
+						prefix = event.shiftKey and " | " or " # "
 						copy prefix + hash
 					markEl target
 			| isGoogle
@@ -644,30 +650,21 @@ window.addEventListener \mousedown (event) !->
 				| el2 = target.closest closestCls
 					code2 = clsData.find (.2 is el2.className) .1
 					selectText target
-					keypress code2
+					keyup code2
 					markEl target
 				| sel
-					keypress \KeyL
+					keyup \KeyL
 				| localName is \li
 					if event.altKey
 						mouseRightDownAction := [\altLis target]
 					else
-						hideChildUl target
-						unless target.parentElement.firstElementChild.querySelector 'i:first-child> a'
-							keepITagUl target
+						hideUlInLis target
+						ul = target.parentElement
+						if ul"$_taxon_toggleSanitizeLis_innerHTML" or target.querySelector ':scope> a ~ i'
+							toggleSanitizeLis target
 						selectText target.parentElement
 						code2 = \KeyL
-						cond =
-							target.closest \.infobox.biota and
-							target.closest \tr .previousElementSibling.innerText is /Genus|Genera/
-						unless cond
-							if prevElSibl = target.parentElement?previousElementSibling
-								cond =
-									prevElSibl.querySelector \#Genera or
-									prevElSibl.previousElementSibling?querySelector \#Genera
-						if cond
-							code2 = \KeyC
-						keypress code2
+						keyup code2
 						markEl target.parentElement
 						# fetchDetails target.parentElement
 				| target.closest \.infobox.biota
@@ -689,7 +686,7 @@ window.addEventListener \mousedown (event) !->
 						if td.querySelector \a
 							td = that
 						selectText td
-						keypress code2
+						keyup code2
 						markEl td
 				| localName in <[th td]> and (table = target.closest \table)
 					if event.ctrlKey =>
@@ -717,13 +714,26 @@ window.addEventListener \mousedown (event) !->
 								.join ""
 						table.replaceWith ul
 						selectText ul
-						keypress code || \KeyL
+						keyup code || \KeyL
 						markEl ul
 						# fetchDetails ul
 				| el = target.closest '#firstHeading,b,h1,h2,h3,h4,h5,h6'
 					selectText el
-					keypress \KeyQ
+					keyup \KeyQ
 					markEl el
+			else
+				switch
+				| localName is \img
+					switch code
+					| \KeyN
+						createCropper target
+						preventCode := yes
+					| \KeyM
+						unless imgurSaving
+							uploadImgur do
+								image: target.src
+								type: \URL
+						preventCode := yes
 , yes
 
 window.addEventListener \mouseup (event) !->
@@ -756,7 +766,7 @@ window.addEventListener \mouseup (event) !->
 				switch type
 				| \altLis
 					[target2] = args
-					prop = \$_Taxonomy_linkOpened
+					prop = \$_taxon_linkOpened
 					i = 0
 					hasOpen = no
 					for li in target2.parentElement.children
@@ -774,7 +784,7 @@ window.addEventListener \mouseup (event) !->
 						chrome.extension.sendMessage \openTabs
 				| \altLisInfoboxBiota
 					[target2] = args
-					prop = \$_Taxonomy_linkOpened
+					prop = \$_taxon_linkOpened
 					i = 0
 					hasOpen = no
 					for li in target2.children
@@ -809,7 +819,7 @@ window.addEventListener \contextmenu (event) !->
 , yes
 
 unless isImgur
-	chrome.storage.sync.get [\token \tokenTime] (result) !~>
+	chrome.storage.local.get [\token \tokenTime] (result) !~>
 		{token} := result
 		{tokenTime} = result
 		unless token and tokenTime + 864e5 * 7 > Date.now!
@@ -817,57 +827,59 @@ unless isImgur
 			timer = setInterval !~>
 				if win.closed
 					clearInterval timer
-					chrome.storage.sync.get [\token] (result) !~>
+					chrome.storage.local.get [\token] (result) !~>
 						{token} := result
 			, 1000
 
-window.addEventListener \load !->
+window.addEventListener \DOMContentLoaded !->
 	switch
 	| isWiki
-		if isWikipedia
-			if el = document.querySelector \#References
-				el .= parentElement
-				do
-					el2 = el.nextElementSibling
-					el.remove!
-				while el = el2
-			if langViEl := document.querySelector 'a.interlanguage-link-target[hreflang=vi]'
-				page = (langViEl.href is /[^\/]+$/)0
-			if wikiCommonEl := document.querySelector '.wb-otherproject-commons> a'
-				el = document.createElement \link
-				el.rel = \prerender
-				el.href = wikiCommonEl.href
-				document.head.appendChild el
-			hasSubspeciesContent := content.innerText.includes \subspecies
-			if page
-				summary = await (await fetch "https://vi.wikipedia.org/api/rest_v1/page/summary/#page")json!
-			App = m.bind do
-				view: ->
-					m \.column.taxonRightSide,
-						m \.row-2.p-3,
-							if hasSubspeciesContent
-								m \.text-green "Phân loài"
-							if wikiCommonEl
-								m \.text-green "Wiki common"
-						if summary
-							m \.col.px-3.column.f-center.scroll-y,
-								m \.mt-1.mb-3.taxonSummaryTitle,
-									m \b summary.title
-								if summary.thumbnail?source
-									m \img.taxonSummaryImg src: that
-								else
-									m \p.text-red.text-center "Không có hình ảnh"
-								m \p.taxonSummaryExtract,
-									m.trust summary.extract_html
-						else
-							m \.col.text-red.text-center "Không có tiếng Việt"
-			el = document.createElement \div
-			document.body.appendChild el
-			m.mount el, App
+		if el = document.querySelector \#References
+			el .= parentElement
+			do
+				el2 = el.nextElementSibling
+				el.remove!
+			while el = el2
+		if el = document.querySelector '.infobox.biota img'
+			img = new Image
+			img.src = el.src.replace /\/\d{3}px-/ \/800px-
+		if langViEl := document.querySelector 'a.interlanguage-link-target[hreflang=vi]'
+			page = (langViEl.href is /[^\/]+$/)0
+		if wikiCommonEl := document.querySelector '.wb-otherproject-commons> a'
+			el = document.createElement \link
+			el.rel = \prerender
+			el.href = wikiCommonEl.href
+			document.head.appendChild el
+		hasSubspeciesContent := content.innerText.includes \subspecies
+		if page
+			summary = await (await fetch "https://vi.wikipedia.org/api/rest_v1/page/summary/#page")json!
+		App = m.bind do
+			view: ->
+				m \.column.taxonRightSide,
+					m \.row-2.p-3,
+						if hasSubspeciesContent
+							m \.text-green "Phân loài"
+						if wikiCommonEl
+							m \.text-green "Wiki common"
+					if summary
+						m \.col.px-3.column.f-center.scroll-y,
+							m \.mt-1.mb-3.taxonSummaryTitle,
+								m \b summary.title
+							if summary.thumbnail?source
+								m \img.taxonSummaryImg src: that
+							else
+								m \p.text-red.text-center "Không có hình ảnh"
+							m \p.taxonSummaryExtract,
+								m.trust summary.extract_html
+					else
+						m \.col.text-red.text-center "Không có tiếng Việt"
+		el = document.createElement \div
+		document.body.appendChild el
+		m.mount el, App
 	| isImgur
 		if location.search is \?state=taxon
 			token := /access_token=([a-z0-9]+)/exec location.hash .1
-			chrome.storage.sync.set do
+			chrome.storage.local.set do
 				token: token
 				tokenTime: Date.now!
 				closeTab

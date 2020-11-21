@@ -6,6 +6,11 @@
 	"description": "taxon",
 	"content_scripts": [{
 		"matches": [
+			"*://*.planetcatfish.com/*",
+			"*://*.fishbase.se/*",
+			"*://*.fishbase.in/*",
+			"*://*.bugguide.net/*",
+			"*://*.biolib.cz/*",
 			"*://*.wikipedia.org/*",
 			"*://*.wikimedia.org/*",
 			"*://imgur.com/*",
@@ -34,6 +39,6 @@
 	"permissions": [
 		"tabs",
 		"storage",
-		"<all_urls>"
+		"http://localhost:8080/*"
 	]
 }
