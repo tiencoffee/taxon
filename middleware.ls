@@ -1,8 +1,4 @@
-require! {
-	"node-fetch": fetch
-}
-
-module.exports = (req, res, next) !->
+global.middleware = (req, res, next) !->
 	if req.url is /^\/q\/(\w+)\/(.*)$/
 		res.setHeader \Access-Control-Allow-Origin \*
 		[, name, val] = that

@@ -1,262 +1,204 @@
+body, h1, h2, h3, h4, h5, h6, p
+	font-family "Roboto",sans-serif !important
 body
-	&:not(.tQj5Y):not(.srp):not(.vasq)
-		font-size 15px !important
-		cursor default
-body, h1, h2, h3, h4, h5, h6
-	font-family "Helvetica Neue" !important
-::selection
-	background #07d
-	color #fff
-::-webkit-scrollbar
-	width 18px
-	height 18px
-	-webkit-appearance none
-::-webkit-scrollbar-track
-	background #fff
-::-webkit-scrollbar-thumb
-	border solid 3px #fff
-	border-radius 16px
-	background #07d
-	&:hover
-		background #08f
-	&:active
-		background #06b
+	font-size 14px
+body
+	background #f8f9fa
+*
+	cursor default !important
+#_app
+	pointer-events none
+._sideLeft
+	width 20%
+	pointer-events auto
+._sideCenter
+	pointer-events none
+	> *
+		pointer-events auto
+._sideRight
+	width 20%
+	pointer-events auto
+@keyframes _fadeIn
+	from
+		transform scale(.95)
+		opacity 0
+	to
+		transform scale(1)
+		opacity 1
+@keyframes _fadeOut
+	from
+		transform scale(1)
+		opacity 1
+	to
+		transform scale(.95)
+		opacity 0
+[data-_mark]
+	box-shadow 0 0 0 2px #07d !important
+._wiki
+	.mw-page-container
+		background #f8f9fa
+	.mw-body-content
+		font-size 1em
+	.mwe-popups
+		border-radius 8px
+		overflow hidden
+		box-shadow 0 2px 4px #888c,0 8px 16px 4px #8883
+		pointer-events none
+		footer
+			display none
+	.mwe-popups-fade-in-up
+	.mwe-popups-fade-in-down
+		animation _fadeIn .1s forwards
+	.mwe-popups-fade-out-up
+	.mwe-popups-fade-out-down
+		animation _fadeOut .1s forwards
+	.thumbinner
+		border-radius 8px
+		img
+			border-radius 6px
+		.magnify
+			display none
+	._summImg
+		max-width 100%
+		max-height 240px
 
-.row
+._row
 	display flex
 	flex-direction row
-.column
+._column
 	display flex
 	flex-direction column
-.col
+._col
 	flex-grow 1
-.col-0
+._col0
 	flex-shrink 0
 for i in range(1, 12)
 	val = floor(i / 12 * 100%, 2)
-	.row > .col-{i}
+	._row > ._col{i}
 		width val
-	.column > .col-{i}
+	._column > ._col{i}
 		height val
 	val = floor(100% / i, 2)
-	.row-{i}
+	._row{i}
 		display grid
 		grid-template-columns repeat(i,1fr)
-		> .col-{i}
+		> ._col{i}
 			grid-column span (i)
-.full
-	{$$full}
-.wrap
+._full
+	position absolute
+	left 0
+	top 0
+	width 100%
+	height 100%
+._wrap
 	flex-wrap wrap
-.nowrap
+._nowrap
 	flex-wrap nowrap
 for dir in row column
-	.{dir}
+	._{dir}
 		prop = dir is row ? "justify-content" : "align-items"
-		&.f-start
+		&._start
 			{prop} flex-start
-		&.f-center
+		&._center
 			{prop} center
-		&.f-end
+		&._end
 			{prop} flex-end
 		prop = dir is row ? "align-items" : "justify-content"
-		&.f-top
+		&._top
 			{prop} flex-start
-		&.f-middle
+		&._middle
 			{prop} center
-		&.f-bottom
+		&._bottom
 			{prop} flex-end
-.f-between
+._between
 	justify-content space-between
-.f-around
+._around
 	justify-content space-around
-.f-evenly
+._evenly
 	justify-content space-evenly
-.f-stretch
+._stretch
 	align-items stretch
 props = {p: padding, m: margin}
 sides = {t: top, r: right, b: bottom, l: left}
 sizes = 32px 16px 8px 4px 2px 0
 for size, i in sizes
-	.gap-{i}
+	._gap{5 - i}
 		grid-gap size
 for p, prop in props
 	for size, i in sizes
 		i = 5 - i
-		.{p}-{i}
+		hasNegate = p is m and i
+		._{p}{i}
 			{prop} size
-		.-{p}-{i}
-			{prop} -(size)
-		.{p}x-{i}
+		if hasNegate
+			._-{p}{i}
+				{prop} -(size)
+		._{p}x{i}
 			{prop}-left size
 			{prop}-right size
-		.{p}y-{i}
+		._{p}y{i}
 			{prop}-top size
 			{prop}-bottom size
-		.-{p}x-{i}
-			{prop}-left -(size)
-			{prop}-right -(size)
-		.-{p}y-{i}
-			{prop}-top -(size)
-			{prop}-bottom -(size)
+		if hasNegate
+			._-{p}x{i}
+				{prop}-left -(size)
+				{prop}-right -(size)
+			._-{p}y{i}
+				{prop}-top -(size)
+				{prop}-bottom -(size)
 		for s, side in sides
-			.{p}{s}-{i}
+			._{p}{s}{i}
 				{prop}-{side} size
-			if p is m and i
-				.-{p}{s}-{i}
+			if hasNegate
+				.-_{p}{s}{i}
 					{prop}-{side} -(size)
 for pos in absolute relative fixed
-	.{pos}
+	._{pos}
 		position pos
 for dis in block inline-block inline flex inline-flex
-	.{dis}
+	._{dis}
 		display dis
-.w-100
+._w100
 	width 100%
-.h-100
+._h100
 	height 100%
-.hidden, [hidden]
+._hidden, [hidden]
 	display none
-for align in left center right justify
-	.text-{align}
-		text-align align
-.text-nowrap
+aligns = {left: Left, center: Center, right: Right, justify: Justify}
+for align, a in aligns
+	._text{a}
+		text-align unquote(align)
+._textNowrap
 	white-space nowrap
 	word-break break-word
-.text-truncate
+._textTtruncate
 	overflow hidden
 	text-overflow ellipsis
 	white-space nowrap
 	word-break break-word
-.scroll
+._textBold
+	font-weight 700
+._textItalic
+	font-style italic
+small
+._textSmall
+	font-size smaller
+._scroll
 	overflow auto
-.scroll-y
+._scrollY
 	overflow-x hidden
 	overflow-y auto
-.noscroll
+._noscroll
 	overflow hidden
-.event
+._event
 	pointer-events auto
-.noevent
+._noevent
 	pointer-events none
-.round
+._round
 	border-radius 8px
-.text-green
+._textGreen
 	color #2a3
-.text-red
+._textRed
 	color #f43
-.bg-white
+._bgWhite
 	background #fff
-
-body
-.mw-body
-	background #f8f9fa !important
-p
-table
-.mw-body-content
-	font-size 15px !important
-.mediawiki
-	.mwe-popups
-		animation-duration .15s
-		pointer-events none
-	.firstHeading> *
-		pointer-events none
-	#mw-page-base
-	#mw-panel
-	#mw-head
-	#footer
-	#catlinks
-	#mw-AnonymousI18N-suggest
-	#siteSub
-	.mbox-small
-	.metadata
-	.navbox
-	.mw-mmv-download-dialog
-	.reflist
-	.navbox + p
-	.reference
-	.mw-editsection
-	table[role=presentation]
-		display none !important
-	#content.mw-body
-		max-width 800px
-		margin 8px auto
-		border 0
-		border-radius 16px
-	.infobox.biota
-		padding 8px
-		border-radius 8px
-		th
-			border-radius 8px
-	img
-	video
-	table
-	#toc
-	.thumbinner
-		border-radius 8px
-	.mw-mmv-wrapper
-		img
-			border-radius 0
-	#content
-		padding 8px
-	#toc
-		position fixed
-		left 8px
-		top 0
-		width 200px
-		max-height 100%
-		border 0
-		overflow auto
-.pointer-events-none
-	pointer-events none !important
-.taxonRightSide
-	position fixed
-	top 0
-	right 0
-	width 230px
-	height 100%
-	border-radius 8px
-	background #f8f9fa
-.taxonSummaryTitle
-	align-self stretch
-	> b
-		display block
-.taxonSummaryExtract
-	align-self stretch
-	text-align justify
-.taxonSummaryImg
-	max-width 100%
-	max-height 180px
-	border-radius 8px
-.taxonLoader
-	width 8px
-	height 8px
-	border solid 4px #ccc
-	border-top-color #607d8b
-	border-radius 50%
-	display inline-block
-	vertical-align middle
-	animation taxonLoader 1s linear infinite
-@keyframes taxonLoader
-	from
-		transform rotate(0deg)
-	to
-		transform rotate(360deg)
-.taxonNotify
-	position fixed
-	left 50%
-	top 8px
-	max-width 50%
-	padding 8px 16px
-	border-radius 8px
-	display inline-block
-	font-size 15px !important
-	background #111
-	color #fff
-	animation taxonNotify .15s forwards
-	z-index 999999
-@keyframes taxonNotify
-	from
-		transform translateX(-50%) scale(.9)
-	to
-		transform translateX(-50%) scale(1)
