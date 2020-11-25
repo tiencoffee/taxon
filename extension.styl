@@ -7,33 +7,91 @@ body
 *
 	cursor default !important
 #_app
+	position fixed
+	top 0
+	left 0
+	width 100%
+	height 100%
+	display flex
+	z-index 1000
 	pointer-events none
 ._sideLeft
-	width 20%
-	pointer-events auto
 ._sideCenter
+._sideRight
 	pointer-events none
 	> *
 		pointer-events auto
+._sideLeft
+	width 20%
 ._sideRight
 	width 20%
+._notifies
+	display flex
+	flex-direction column
+	align-items center
+	pointer-events none
+._notify
+	margin-top 4px
+	padding 4px 8px
+	border-radius 8px
+	display inline-flex
+	align-items center
+	background #112
+	color #fff
+	animation _fadeIn5 .1s forwards
+._modals
+	pointer-events none
+._modal
+	position absolute
+	top 6%
+	width fit-content
+	max-height 80%
+	border-radius 8px
+	background #fff
+	box-shadow 0 2px 4px #888c,0 8px 16px 4px #8883
+	animation _fadeIn95 .1s forwards
 	pointer-events auto
-@keyframes _fadeIn
+	z-index 1020
+._modalClose
+	width 24px
+	height 24px
+	border 0
+	border-radius 6px
+	display flex
+	justify-content center
+	align-items center
+	background #0000
+	outline 0
+	&:hover
+		background #f43
+		color #fff
+	&:active
+		background #c43
+		color #fff
+#_mark
+	position absolute
+	z-index 1010
+@keyframes _fadeIn5
+	from
+		transform scale(.5)
+		opacity 0
+	to
+		transform scale(1)
+		opacity 1
+@keyframes _fadeIn95
 	from
 		transform scale(.95)
 		opacity 0
 	to
 		transform scale(1)
 		opacity 1
-@keyframes _fadeOut
+@keyframes _fadeOut95
 	from
 		transform scale(1)
 		opacity 1
 	to
 		transform scale(.95)
 		opacity 0
-[data-_mark]
-	box-shadow 0 0 0 2px #07d !important
 ._wiki
 	.mw-page-container
 		background #f8f9fa
@@ -48,19 +106,59 @@ body
 			display none
 	.mwe-popups-fade-in-up
 	.mwe-popups-fade-in-down
-		animation _fadeIn .1s forwards
+		animation _fadeIn95 .1s forwards
 	.mwe-popups-fade-out-up
 	.mwe-popups-fade-out-down
-		animation _fadeOut .1s forwards
+		animation _fadeOut95 .1s forwards
+	.infobox.biota
+		padding 0
+		border-spacing 0 8px
+		th
+			padding 4px 8px
+		td
+			padding 0 8px
 	.thumbinner
-		border-radius 8px
-		img
-			border-radius 6px
 		.magnify
 			display none
+	[style*="border:solid 1px"]
+		border-radius 8px
+	table
+	#toc
+	.thumbinner
+	._summBox
+		border-radius 8px
+	.thumbimage
+	.image> img
+	.thumbinner> img
+	._summImg
+		border-radius 6px
+	.noresize
+		border-radius 6px
+		overflow hidden
+	#firstHeading
+		> *
+			pointer-events none
+	._summTitle
+		margin 0 0 .25em
+		padding 0
 	._summImg
 		max-width 100%
 		max-height 240px
+	._summExtract
+		> p
+			margin 0
+	ul
+		&:hover
+			border-radius 4px
+			background #07d1
+			box-shadow 0 0 0 2px #07d1
+		ul
+			&:hover
+				background #07d2
+				box-shadow 0 0 0 2px #07d2
+	a[data-opened-a]
+		border-bottom solid 2px currentColor
+		text-decoration none
 
 ._row
 	display flex
@@ -120,19 +218,23 @@ for dir in row column
 	align-items stretch
 props = {p: padding, m: margin}
 sides = {t: top, r: right, b: bottom, l: left}
-sizes = 32px 16px 8px 4px 2px 0
+sizes = 48px 40px 32px 24px 16px 8px 4px 2px 0
 for size, i in sizes
-	._gap{5 - i}
+	._gap{8 - i}
 		grid-gap size
 for p, prop in props
 	for size, i in sizes
-		i = 5 - i
+		i = 8 - i
 		hasNegate = p is m and i
 		._{p}{i}
 			{prop} size
 		if hasNegate
 			._-{p}{i}
 				{prop} -(size)
+for p, prop in props
+	for size, i in sizes
+		i = 8 - i
+		hasNegate = p is m and i
 		._{p}x{i}
 			{prop}-left size
 			{prop}-right size
@@ -146,6 +248,10 @@ for p, prop in props
 			._-{p}y{i}
 				{prop}-top -(size)
 				{prop}-bottom -(size)
+for p, prop in props
+	for size, i in sizes
+		i = 8 - i
+		hasNegate = p is m and i
 		for s, side in sides
 			._{p}{s}{i}
 				{prop}-{side} size
@@ -194,11 +300,21 @@ small
 	pointer-events auto
 ._noevent
 	pointer-events none
-._round
+._round8
 	border-radius 8px
+._round6
+	border-radius 6px
+._border
+	border solid 1px #a2a9b1
+._border0
+	border 0
+._bgWhite
+	background #fff
 ._textGreen
 	color #2a3
 ._textRed
 	color #f43
-._bgWhite
-	background #fff
+._active
+._hover:hover
+		background #07d
+		color #fff

@@ -1,12 +1,15 @@
 (async function() {
 	const {host} = location
 	window.t = {
-		wiki: /wiki[pm]edia\.org/.test(host),
 		wikipedia: /wikipedia\.org/.test(host),
-		wikimedia: /wikimedia\.org/.test(host),
+		wikicommons: /commons\.wikimedia\.org/.test(host),
+		wikispecies: /species\.wikimedia\.org/.test(host),
+		wikiImg: /upload\.wikimedia\.org/.test(host),
 		google: /google\.com/.test(host),
 		imgur: /imgur\.com/.test(host)
 	}
+	t.wikiPage = t.wikipedia || t.wikicommons || t.wikispecies
+	t.wiki = t.wikiPage || t.wikiImg
 	let [styl, code] = await Promise.all([
 		(await fetch(chrome.runtime.getURL("extension.styl"))).text(),
 		(await fetch(chrome.runtime.getURL("extension.ls"))).text()

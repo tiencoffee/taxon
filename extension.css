@@ -16,7 +16,7 @@ body, h1, h2, h3, h4, h5, h6, p {
 	margin: auto !important;
 }
 .mw-body {
-	padding: 16px !important;
+	padding: 16px 0 !important;
 }
 .thumbinner img {
 	width: 100%;
@@ -31,6 +31,7 @@ body, h1, h2, h3, h4, h5, h6, p {
 .navbox,
 .reference,
 .sisterproject,
+.ambox,
 #mw-navigation,
 #mw-panel,
 #siteSub,
