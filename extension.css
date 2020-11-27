@@ -2,9 +2,6 @@ body {
 	opacity: 0;
 	pointer-events: none;
 }
-* {
-	box-sizing: border-box;
-}
 body, h1, h2, h3, h4, h5, h6, p {
 	font-family: "Roboto",sans-serif !important;
 }
@@ -32,6 +29,7 @@ body, h1, h2, h3, h4, h5, h6, p {
 .reference,
 .sisterproject,
 .ambox,
+.portal.tright,
 #mw-navigation,
 #mw-panel,
 #siteSub,
