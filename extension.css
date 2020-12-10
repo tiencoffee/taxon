@@ -8,7 +8,8 @@ body, h1, h2, h3, h4, h5, h6, p {
 .mw-page-container {
 	padding: 0 !important;
 }
-.mw-content-container {
+.mw-content-container,
+.mw-mmv-wrapper {
 	width: 60%;
 	margin: auto !important;
 }

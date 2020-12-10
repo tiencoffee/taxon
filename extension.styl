@@ -1,16 +1,16 @@
 body, h1, h2, h3, h4, h5, h6, p
 	font-family "Roboto",sans-serif !important
 body
-	font-size 14px
+	font-size 10pt
 #_app
 	position fixed
-	top 0
 	left 0
+	top 0
 	width 100%
 	height 100%
 	display flex
 	box-sizing border-box
-	z-index 1000
+	z-index 2000
 	pointer-events none
 	*
 		box-sizing border-box
@@ -22,9 +22,9 @@ body
 	> *
 		pointer-events auto
 ._sideLeft
-	width 20%
 ._sideRight
 	width 20%
+	background #f8f9fa
 ._notifies
 	display flex
 	flex-direction column
@@ -49,9 +49,10 @@ body
 	border-radius 8px
 	background #fff
 	box-shadow 0 2px 4px #888c,0 8px 16px 4px #8883
+	transition margin-top .1s
 	animation _fadeIn95 .1s forwards
 	pointer-events auto
-	z-index 10010
+	z-index 2030
 ._modalClose
 	width 24px
 	height 24px
@@ -71,7 +72,7 @@ body
 ._mark
 	position fixed
 	pointer-events none
-	z-index 10000
+	z-index 2050
 @keyframes _fadeIn5
 	from
 		transform scale(.5)
@@ -93,6 +94,8 @@ body
 	to
 		transform scale(.95)
 		opacity 0
+._fadeOut95
+	animation _fadeOut95 .1s forwards
 ._wiki
 	*
 		box-sizing border-box
@@ -107,11 +110,19 @@ body
 		display unset
 	.mwe-popups
 		border-radius 8px
+		font-size 1em
 		overflow hidden
 		box-shadow 0 2px 4px #888c,0 8px 16px 4px #8883
 		pointer-events none
+		z-index 2040
 		footer
 			display none
+	.mw-mmv-image> img
+		max-width 60%
+		max-height 100%
+		height unset
+	.mw-mmv-image-wrapper
+		bottom 60px
 	.mwe-popups-fade-in-up
 	.mwe-popups-fade-in-down
 		animation _fadeIn95 .1s forwards
@@ -133,6 +144,10 @@ body
 	#toc
 		display block
 		overflow auto
+		user-select none
+		ul
+			background unset
+			box-shadow unset
 	table
 	#toc
 	.thumb
@@ -171,6 +186,20 @@ body
 	a[data-opened-a]
 		border-bottom solid 2px currentColor
 		text-decoration none
+._wikicommons
+	.mw-parser-output
+		> *
+			display none
+		> .gallery
+		> #wdinfobox
+			display unset !important
+	#wdinfoboxcaption
+		background none !important
+._google
+	.hm60ue
+		opacity 0
+	.ZGGHx
+		display none
 
 ._row
 	display flex

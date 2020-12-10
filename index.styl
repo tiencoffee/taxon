@@ -1,16 +1,17 @@
 body
 	margin 0
 	font-family "Roboto",sans-serif
+	font-size 10pt
 ::-webkit-scrollbar
 	-webkit-appearance none
-	background #2b3b44
+	background #333436
 ::-webkit-scrollbar-thumb
-	background #3b4b54
+	background #434446
 .line
-	height 18px
+	height 15px
 	font-family "DejaVu Sans Mono"
 .lineFind
-	background #3b4b54
+	background #434446
 .node
 	margin-left 6px
 	display inline-block
@@ -18,15 +19,14 @@ body
 	vertical-align middle
 .text
 	margin-left 8px
-	font-size 13px
-	color #888
+	color #858164
 .img
 	min-width 4px
 	min-height 4px
-	max-width 16px
-	max-height 16px
+	max-width 13px
+	max-height 13px
 	margin-left 8px
-	border-radius 3px
+	border-radius 2px
 	vertical-align middle
 	background #fff
 .life
@@ -60,7 +60,6 @@ body
 	width 100%
 	height 100%
 	margin 0
-	font-size 15px
 	white-space pre
 	cursor default
 #findEl
@@ -78,7 +77,6 @@ body
 	flex-grow 1
 	outline 0
 #findTextEl
-	font-size 13px
 	color #888
 #popupBody
 	max-width min-content
@@ -87,7 +85,6 @@ body
 	display flex
 	flex-direction column
 	font-family "Roboto",sans-serif
-	font-size 15px
 	text-align center
 	background #fff
 	transform-origin 100% 50%
@@ -95,10 +92,9 @@ body
 .popupTwoImg
 	.popupImg
 		max-width 280px
-		max-height 220px
+		max-height 240px
 #popupName
 	display block
-	font-size 15px
 	font-weight bold
 	white-space nowrap
 #popupText
@@ -109,29 +105,43 @@ body
 	margin-top 6px
 	display flex
 	justify-content center
-	align-items center
 .popupGender
-	&:nth-child(2)
-		margin-left 4px
-.popupGenderCaptn
-	margin-top 2px
-	font-size 13px
-	color #333
-.popupImgs
+	width 100%
 	display flex
 	flex-direction column
+	align-self stretch
+	&:nth-child(2)
+		margin-left 4px
+.popupPicture
+	position relative
+	border-radius 6px
+	display flex
+	justify-content center
+	align-items center
+	flex-grow 1
+	overflow hidden
+	background #fff
+.popupBgImg
+	position absolute
+	left 0
+	top 0
+	width 100%
+	height 100%
+	object-fit cover
+	filter blur(24px)
 .popupImg
 	max-width 320px
 	max-height 240px
-	border-radius 6px
-	background #fff
+	image-rendering -webkit-optimize-contrast
+	z-index 0
 .popupCaptn
 	margin-top 2px
 	color #333
-	font-size 13px
+.popupGenderCaptn
+	margin-top 2px
+	color #333
 #popupSummary
 	margin-top 6px
-	font-size 13px
 	line-height 1.3
 	> p
 		margin 0

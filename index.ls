@@ -75,7 +75,7 @@ addNode = (node, parentLv, parentName, extinct, chrs, first, last, nextSiblExtin
 			addNode child, lv, parentName, extinct, chrs, not i, i is lastIndex, childs[i + 1]?2
 
 addNode tree, -1 "" no "" yes yes
-document.body.style.height = lines.length * 18 + \px
+document.body.style.height = lines.length * 15 + \px
 
 App =
 	oninit: !->
@@ -113,7 +113,7 @@ App =
 		localStorage.taxonomyStart = start
 		@lines = lines.slice start, start + @len
 		@start = start
-		scrollTo 0 start * 18 unless noScroll
+		scrollTo 0 start * 15 unless noScroll
 		m.redraw!
 
 	getRankName: (lv) ->
@@ -139,16 +139,18 @@ App =
 								line.imgs.map (img, i) ~>
 									if img
 										m \.popupGender,
-											m \.popupImgs,
+											m \.popupPicture,
+												m \img.popupBgImg,
+													src: img.src
 												m \img.popupImg,
 													src: img.src
 													onload: @onLoadPopupImg
-												if img.captn
-													m \.popupCaptn that
-											if line.imgs.1
+											if img.captn
+												m \.popupCaptn that
+											if line.imgs.length is 2
 												m \.popupGenderCaptn i && \Cái || \Đực
 						if summary
-							m \#popupSummary m.trust that
+							m \#popupSummary m.trust summary
 			m.mount popupEl, popup
 			@popper = Popper.createPopper event.target, popupEl,
 				placement: \left
@@ -233,7 +235,7 @@ App =
 
 	oncreate: !->
 		document.body.onscroll = !~>
-			@goLine Math.ceil(scrollY / 18), yes
+			@goLine Math.ceil(scrollY / 15), yes
 		window.onkeydown = (event) !~>
 			unless event.repeat
 				switch event.code
@@ -251,7 +253,7 @@ App =
 					@finding = no
 				m.redraw!
 		do window.onresize = !~>
-			@len = Math.ceil innerHeight / 18
+			@len = Math.ceil innerHeight / 15
 			@goLine!
 
 	view: ->
@@ -284,7 +286,7 @@ App =
 			if @finding
 				m \#findEl,
 					m \input#findInputEl,
-						autocomplete: no
+						autocomplete: \off
 						oninput: !~>
 							@find it.target.value
 						onkeydown: !~>

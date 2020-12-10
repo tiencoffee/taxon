@@ -29,7 +29,7 @@
 		document.body.style.opacity = 1
 		document.body.style.pointerEvents = "auto"
 	}
-	document.readyState == "complete"
+	document.readyState === "complete"
 		? load()
 		: window.addEventListener("load", load)
 })()

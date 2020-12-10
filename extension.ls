@@ -56,6 +56,7 @@ App =
 					\super-?regna
 					\vực
 					"siêu giới"
+				combo: \1+Backquote
 			* name: \kingdom
 				prefixes:
 					\kingdom
@@ -63,6 +64,7 @@ App =
 					\regnum
 					\regna
 					\giới
+				combo: \1
 			* name: \subkingdom
 				prefixes:
 					\sub-?kingdom
@@ -70,6 +72,7 @@ App =
 					\sub-?regnum
 					\sub-?regna
 					"phân giới"
+				combo: \1+2
 			* name: \infrakingdom
 				prefixes:
 					\infra-?kingdom
@@ -77,6 +80,7 @@ App =
 					\infra-?regnum
 					\infra-?regna
 					"thứ giới"
+				combo: \1+3
 			* name: \superphylum
 				prefixes:
 					\super-?phylum
@@ -88,6 +92,7 @@ App =
 					\super-?divisiones
 					"liên ngành"
 					"siêu ngành"
+				combo: \2+1
 			* name: \phylum
 				prefixes:
 					\phylum
@@ -99,6 +104,7 @@ App =
 					\divisiones
 					\ngành
 				suffixes: <[ophyta mycota]>
+				combo: \2
 			* name: \subphylum
 				prefixes:
 					\sub-?phylum
@@ -110,6 +116,7 @@ App =
 					\sub-?divisiones
 					"phân ngành"
 				suffixes: <[phytina mycotina]>
+				combo: \2+3
 			* name: \infraphylum
 				prefixes:
 					\infra-?phylum
@@ -120,6 +127,7 @@ App =
 					\infra-?phyla
 					\infra-?divisiones
 					"thứ ngành"
+				combo: \2+4
 			* name: \parvphylum
 				prefixes:
 					\parv-?phylum
@@ -133,6 +141,7 @@ App =
 					\parv-?divisiones
 					\micro-?divisiones
 					"tiểu ngành"
+				combo: \2+5
 			* name: \superclass
 				prefixes:
 					\super-?class
@@ -140,6 +149,7 @@ App =
 					\super-?classis
 					"liên lớp"
 					"siêu lớp"
+				combo: \3+2
 			* name: \class
 				prefixes:
 					\class
@@ -147,6 +157,7 @@ App =
 					\classis
 					\lớp
 				suffixes: <[opsida phyceae mycetes]>
+				combo: \3
 			* name: \subclass
 				prefixes:
 					\sub-?class
@@ -154,23 +165,28 @@ App =
 					\sub-?classis
 					"phân lớp"
 				suffixes: <[phycidae mycetidae]>
+				combo: \3+4
 			* name: \infraclass
 				prefixes:
 					\infra-?class
 					\infra-?classes
 					\infra-?classis
 					"thứ lớp"
+					"phân thứ lớp"
+				combo: \3+5
 			* name: \parvclass
 				prefixes:
 					\parv-?class
 					\parv-?classes
 					\parv-?classis
 					"tiểu lớp"
+				combo: \3+6
 			* name: \legion
 				prefixes:
 					\legion
 					\legions
 					\đoàn
+				combo: \4+2
 			* name: \supercohort
 				prefixes:
 					\super-?cohort
@@ -178,6 +194,7 @@ App =
 					\super-?cohors
 					\super-?cohortes
 					"liên đội"
+				combo: \4+3
 			* name: \cohort
 				prefixes:
 					\cohort
@@ -185,6 +202,7 @@ App =
 					\cohors
 					\cohortes
 					\đội
+				combo: \4
 			* name: \magnorder
 				prefixes:
 					\magn-?order
@@ -197,6 +215,7 @@ App =
 					\mega-?ordines
 					"tổng bộ"
 					"đại bộ"
+				combo: \5+3
 			* name: \superorder
 				prefixes:
 					\super-?order
@@ -206,6 +225,7 @@ App =
 					"liên bộ"
 					"siêu bộ"
 				suffixes: <[anae]>
+				combo: \5+4
 			* name: \order
 				prefixes:
 					\order
@@ -214,6 +234,7 @@ App =
 					\ordines
 					\bộ
 				suffixes: <[iformes ales]>
+				combo: \5
 			* name: \suborder
 				prefixes:
 					\sub-?order
@@ -222,6 +243,7 @@ App =
 					\sub-?ordines
 					"phân bộ"
 				suffixes: <[ineae]>
+				combo: \5+6
 			* name: \infraorder
 				prefixes:
 					\infra-?order
@@ -230,6 +252,7 @@ App =
 					\infra-?ordines
 					"thứ bộ"
 				suffixes: <[aria]>
+				combo: \5+7
 			* name: \parvorder
 				prefixes:
 					\parv-?order
@@ -237,6 +260,7 @@ App =
 					\parv-?ordo
 					\parv-?ordines
 					"tiểu bộ"
+				combo: \5+8
 			* name: \superfamily
 				prefixes:
 					\super-?family
@@ -246,6 +270,7 @@ App =
 					"liên họ"
 					"siêu họ"
 				suffixes: <[oidea acea]>
+				combo: \6+5
 			* name: \family
 				prefixes:
 					\family
@@ -254,6 +279,7 @@ App =
 					\familiae
 					\họ
 				suffixes: <[idae aceae]>
+				combo: \6
 			* name: \subfamily
 				prefixes:
 					\sub-?family
@@ -262,12 +288,14 @@ App =
 					\sub-?familiae
 					"phân họ"
 				suffixes: <[inae oideae]>
+				combo: \6+7
 			* name: \supertribe
 				prefixes:
 					\super-?tribe
 					\super-?tribes
 					\super-?tribus
 					"liên tông"
+				combo: \7+6
 			* name: \tribe
 				prefixes:
 					\tribe
@@ -275,22 +303,26 @@ App =
 					\tribus
 					\tông
 				suffixes: <[ini eae]>
+				combo: \7
 			* name: \subtribe
 				prefixes:
 					\sub-?tribe
 					\sub-?tribes
 					\sub-?tribus
 					"phân tông"
+				combo: \7+8
 			* name: \genus
 				prefixes:
 					\genus
 					\genera
 					\chi
+				combo: \8
 			* name: \subgenus
 				prefixes:
 					\sub-?genus
 					\sub-?genera
 					"phân chi"
+				combo: \8+9
 			* name: \section
 				prefixes:
 					\section
@@ -298,34 +330,41 @@ App =
 					\sectio
 					\sectiones
 					\mục
+				combo: \8+0
 			* name: \series
 				prefixes:
 					\series
 					\loạt
+				combo: \8+Minus
 			* name: \superspecies
 				prefixes:
 					\super-?species
 					"liên loài"
+				combo: \9+8
 			* name: \species
 				prefixes:
 					\species
 					\loài
+				combo: \9
 			* name: \subspecies
 				prefixes:
 					\sub-?species
 					"phân loài"
+				combo: \9+0
 			* name: \variety
 				prefixes:
 					\variety
 					\varieties
 					\varietas
 					\thứ
+				combo: \9+Minus
 			* name: \form
 				prefixes:
 					\form
 					\forms
 					\forma
 					\dạng
+				combo: \9+Equal
 		@ranks.prefixes = []
 		@ranks.suffixes = []
 		for rank, i in @ranks
@@ -335,7 +374,7 @@ App =
 				prefix =
 					text: text
 					regex: ///#text///i
-					startsRegex: ///^#text///i
+					startsRegex: ///^#text[ \xa0:]+///i
 					rank: rank
 				@ranks.prefixes.push prefix
 			if rank.suffixes
@@ -343,7 +382,7 @@ App =
 					suffix =
 						text: text
 						regex: ///[A-Z][a-z]*#text///
-						startsRegex: ///^[A-Z][a-z]*#text///
+						startsRegex: ///^[A-Z][a-z]*#text(?=[^a-z\-]|$)///
 						rank: rank
 					@ranks.suffixes.push suffix
 			@ranks[rank.name] = rank
@@ -354,6 +393,7 @@ App =
 			b.text.length - a.text.length
 		@regexes = {}
 			..prefixesStr = @ranks.prefixes.map (.text) .join \|
+			..prefixes = ///(#{..prefixesStr})$///i
 			..startsPrefixes = ///^(#{..prefixesStr})[ \xa0:]+///i
 			..extinct = /\b(tuyệt chủng|extinct|fossil)\b|†/i
 			..incSedis = /\b(incertae sedis|inc\. sedis|uncertain)\b/i
@@ -364,6 +404,7 @@ App =
 		@token = null
 		@album = null
 		@isContextMenu = no
+		@comboRanks = []
 		@resetCombo!
 		@els = {}
 		window.addEventListener \mousedown @onmousedown, yes
@@ -378,7 +419,8 @@ App =
 					await @getImgurToken!
 				unless @album
 					until await @getImgurAlbum! =>
-		if t.wiki
+		switch
+		| t.wiki
 			@summ = null
 			@els
 				..viLang = document.querySelector ".interlanguage-link-target[lang=vi]"
@@ -388,7 +430,7 @@ App =
 				..infoboxImg = document.querySelector ".infobox.biota a.image> img, .infobox.taxobox a.image> img"
 				..infoboxLinkImg = ..infoboxImg?parentElement
 			if el = document.querySelector '
-			#Notes,#References,#External_links,#Reference\\/External_Links,
+			#Notes,#References,#External_links,#Reference\\/External_Links,#Sources,
 			#Chú_thích,#Tham_khảo,#Liên_kết_ngoài'
 				el .= parentElement
 				do
@@ -404,7 +446,7 @@ App =
 				q = that.href.split \/ .[* - 1]
 				@summ = await (await fetch "https://vi.wikipedia.org/api/rest_v1/page/summary/#q")json!
 				m.redraw!
-		else if t.imgur
+		| t.imgur
 			if location.search is \?state=taxon
 				@token = /access_token=([a-z\d]+)/exec location.hash .1
 				chrome.storage.local.set do
@@ -460,7 +502,6 @@ App =
 	tableCol: (td) ->
 		table = td.closest \table
 		grid = @table table
-		console.log grid
 		col = grid.find (.includes td)
 		col
 			.slice col.indexOf td
@@ -519,6 +560,10 @@ App =
 				@makeModfCombo event
 				code -= /^(Key|Digit)/
 				@combo += (@combo and \+ or '') + code
+			combo = @modfCombo + @combo
+			switch combo
+			| \Ctrl+Shift+S
+				@resetCombo!
 
 	onkeyup: (event) !->
 		if @lastCombo is event.code
@@ -603,8 +648,9 @@ App =
 
 	readCopiedImgBlob: ->
 		[item] = await navigator.clipboard.read!
-		if item?types.0.startsWith \image/
-			item.getType item.types.0
+		if item
+			[type] = item.types.filter (.startsWith \image/)
+			item.getType type if type
 
 	uploadImgur: (image, type) ->
 		if @token and @album
@@ -614,24 +660,27 @@ App =
 				..append \image image
 				..append \album album
 				..append \type type
-			res = await fetch \https://api.imgur.com/3/image,
-				method: \post
-				headers:
-					"Authorization": "Bearer #@token"
-				body: formData
-				background: yes
-			if res.ok
-				res = await res.json!
-				if res.success
-					{id, deletehash} = res.data
-					await @copy " # #id"
-					notify.update "Đã upload ảnh Imgur: #id"
-					if type is \URL
-						location.href = "https://imgur.com/edit?deletehash=#deletehash&album_id=#album"
+			try
+				res = await fetch \https://api.imgur.com/3/image,
+					method: \post
+					headers:
+						"Authorization": "Bearer #@token"
+					body: formData
+					background: yes
+				if res.ok
+					res = await res.json!
+					if res.success
+						{id, deletehash} = res.data
+						await @copy " # #id"
+						notify.update "Đã upload ảnh Imgur: #id"
+						if type is \URL
+							location.href = "https://imgur.com/edit?deletehash=#deletehash&album_id=#album"
+					else
+						notify.update "Upload ảnh Imgur thất bại"
 				else
-					notify.update "Upload ảnh Imgur thất bại"
-			else
-				notify.update "Không thể upload ảnh Imgur"
+					notify.update "Không thể upload ảnh Imgur"
+			catch
+				notify.update "Upload ảnh Imgur lỗi: #{e.message}"
 		else
 			@notify "Chưa có token hoặc album"
 
@@ -645,7 +694,7 @@ App =
 				if res.success
 					albums = res.data
 					album = await @modal "Chọn album Imgur",, (modal) ~>
-						m \._row6,
+						m \._row6._gap2,
 							albums.map (album) ~>
 								m \._col._p2._column._center._round8._hover,
 									class: @class do
@@ -756,7 +805,7 @@ App =
 			@modals.push modal
 			m.redraw!
 
-	extract: (targets, opts = {}, parent, items) ->
+	extract: (targets, opts = {}, parent, items = [], index = 0) ->
 		if typeof targets is \string
 			targets = targets
 				.trim!
@@ -768,10 +817,9 @@ App =
 		opts = {
 			notMatchText: \?
 			deep: no
+			ranks: @comboRanks.length
 			...opts
 		}
-		unless parent
-			items = []
 		notMatchTab = void
 		formatItems = (items) !~>
 			if items.length
@@ -780,13 +828,29 @@ App =
 						for item in items
 							item.0.extinct = ""
 						parent.extinct = \*
+			uniqItems = []
+			uniqTexts = []
+			for item in items
+				itemText = item.0.text - \*
+				if itemText is \? or not uniqTexts.includes itemText
+					uniqItems.push item
+					uniqTexts.push itemText
+			items.splice 0 Infinity, ...uniqItems
 			items.sort (a, b) ~>
 				a.0.extinct.length - b.0.extinct.length or
-				(a.0.text is \?) - (b.0.text is \?)
+				(a.0.text is \?) - (b.0.text is \?) or
+				(a.0.text is \_) - (b.0.text is \_)
 		for target, i in targets
 			isElTarget = target instanceof Element
 			text = void
 			if isElTarget
+				if target.childNodes.length is 1 and target.firstElementChild?matches "ul, ol, dl"
+					@extract target.firstChild.children,
+						opts
+						parent
+						items
+						index + 1
+					continue
 				targetText = target.innerText
 					.trim!
 					.split \\n 1 .0
@@ -800,65 +864,94 @@ App =
 			targetText = targetText
 				.replace @regexes.extinct, ""
 				.trim!
-			tab = void
-			if opts.tab?
-				tab = opts.tab
 			if isElTarget
-				links = target.querySelectorAll ":scope> i> a, :scope> a"
+				links = [...target.querySelectorAll ":scope> i> a, :scope> b> a, :scope> a"]
 				if links.length
 					for link in links
 						innerText = link.innerText.trim!
-						if innerText is \†
+						switch
+						| innerText is \†
+							link.dataset.excl = 1
+						| @regexes.prefixes.test innerText
 							link.dataset.excl = 1
 						else
 							opts.link? target, link
-				el = target.querySelector ":scope> i> a:not(data-excl)"
-				el ?= target.querySelector ":scope> i"
-				el ?= target.querySelector ":scope> a:not(data-excl)"
-				text = el?innerText
-			if tab
-				rank = @findRank (.tab is tab)
-			else
-				rank = @findRank \prefixes (.startsRegex.test targetText)
+				textEl = null
+				if el = target.querySelector ":scope> i:first-child"
+					if el.innerText.trim!0 is /[A-Z]/
+						textEl = el
+				unless textEl
+					if el = target.querySelector ":scope> i> a:not([data-excl])"
+						if el.innerText.trim!0 is /[A-Z]/
+							textEl = el
+				unless textEl
+					if el = target.querySelector ":scope> b> a:not([data-excl])"
+						if el.innerText.trim!0 is /[A-Z]/
+							textEl = el
+				unless textEl
+					if el = target.querySelector ":scope> i"
+						if el.innerText.trim!
+							textEl = el
+				unless textEl
+					if el = target.querySelector ":scope> a:not([data-excl])"
+						textEl = el
+				if textEl
+					if textEl.localName is \i and el = textEl.nextSibling
+						if el.wholeText is /^( subsp\. | sp\. )/
+							textEl = null
+				if textEl
+					text = textEl.innerText.trim!
 			text ?= targetText
 			text = text
 				.replace @regexes.startsPrefixes, ""
-				.replace /["']/g ""
-			if /cf\.|sp\./ is text
+				.replace /["'?()]/g ""
+			if /\ cf\. |(?<!sub)sp\. | sp\. (?![a-z])/ is text
 				continue
+			console.log text
+			tab = void
+			rank = opts.ranks[index]
+			rank ?= @findRank \prefixes (.startsRegex.test targetText)
 			rank ?= @findRank \suffixes (.startsRegex.test text)
 			tab = rank?tab ? ""
 			notMatchTab ?= tab
+			subspeciesRegex = ///
+				^([A-Z][a-z]+|[A-Z]\.)\s
+				(\([a-z-]{2,}\)|[a-z-]{2,}|[a-z]\.)\s
+				(?:subsp\.\s)?
+				([a-z-]{2,})
+			///
+			speciesRegex = /^([A-Z][a-z]+|[A-Z]\.)\s([a-z-]{2,})/
+			otherRankRegex = /^([A-Z][a-z]+)/
 			if rank
 				switch
 				| rank.lv is 35
-					if matched = /^([A-Z][a-z]+|[A-Z]\.)\s([a-z-]{2,}|[a-z]\.)\s([a-z-]{2,})/ is text
+					if matched = subspeciesRegex.exec text
 						text = matched.3
 					else
 						text = opts.notMatchText
 				| rank.lv is 34
-					if matched = /^([A-Z][a-z]+|[A-Z]\.)\s([a-z-]{2,})/ is text
+					if matched = speciesRegex.exec text
 						text = matched.2
 					else
 						text = opts.notMatchText
 				| @regexes.incSedis.test text
 					text = \?
-				| matched = /^([A-Z][a-z]+)/ is text
+				| matched = otherRankRegex.exec text
 					text = matched.1
 				else
 					text = opts.notMatchText
 			else
 				switch
-				| /\b(incertae sedis|uncertain)\b/i is text
+				| @regexes.incSedis.test text
 					text = \?
 					tab = notMatchTab
-				| matched = /^([A-Z][a-z]+|[A-Z]\.)\s([a-z-]{2,}|[a-z]\.)\s([a-z-]{2,})/ is text
+				| matched = subspeciesRegex.exec text
 					text = matched.3
 					tab = @ranks.subspecies.tab
-				| matched = /^([A-Z][a-z]+|[A-Z]\.)\s([a-z-]{2,})/ is text
+				| matched = speciesRegex.exec text
 					text = matched.2
 					tab = @ranks.species.tab
-				| matched = /^([A-Z][a-z]+)/ is text
+				| matched = otherRankRegex.exec text
 					text = matched.1
 					tab = @ranks.genus.tab
 				else
@@ -874,17 +967,18 @@ App =
 					notMatchTab = tab
 					newItem =
 						* tab: tab
-							text: \?
+							text: \_
 							extinct: ""
 						* items.splice 0
 					items.0 = newItem
 					formatItems newItem.1
 			if opts.deep and isElTarget
-				if ul = target.querySelector \ul
+				if ul = target.querySelector "ul, ol, dl"
 					@extract ul.children,
 						opts
 						item.0
 						item.1
+						index + 1
 			items.push item
 		formatItems items
 		unless parent
@@ -892,11 +986,17 @@ App =
 				.flat Infinity
 				.map ~> \\n + it.tab + it.text + it.extinct
 				.join ""
+			@comboRanks = []
+			m.redraw!
 		items
 
 	doCombo: (combo, target, sel, event, args) !->
 		doCombo = (combo2 = combo, target2 = target, sel2 = sel, args2 = args) !~>
 			@doCombo combo2, target2, sel2, event, args2
+		if rank = @findRank (.combo is combo)
+			@comboRanks.push rank
+		else if combo is \0
+			@comboRanks = []
 		switch
 		| sel
 			switch
@@ -918,12 +1018,13 @@ App =
 					"E+RMB": " # % ; exhibit"
 					"D+RMB": " # % ; drawing"
 					"H+RMB": " # % ; holotype"
-					"S+RMB": " # % ; skull"
-					"K+RMB": " # % ; skeleton"
+					"P+RMB": " # % ; paratype"
+					"U+RMB": " # % ; skull"
+					"T+RMB": " # % ; skeleton"
 					"J+RMB": " # % ; jaw"
 					"M+RMB": " # % ; mandible"
 					"L+RMB": " # % ; illustration"
-					"P+RMB": " # % ; specimen"
+					"S+RMB": " # % ; specimen"
 					"Period+RMB": " # % ; ."
 					"Semicolon+RMB": " ; % ; "
 					"Q+RMB": " # % | ?"
@@ -954,89 +1055,82 @@ App =
 				if combo is \RMB
 					window.open target.href
 			| td = target.closest ".infobox.biota td:nth-child(2), .infobox.taxobox td:nth-child(2)"
-				if combo is \RMB
+				if combo in [\RMB \LMB]
 					rankName = td.previousElementSibling.innerText
 						.replace \: ""
 						.trim!
-					rank = @findRank \prefixes (.startsRegex.test rankName)
+					rank = @findRank \prefixes (.regex.test rankName)
 					if rank
-						tab = rank.tab
 						@data = @extract td,
-							tab: tab
+							ranks: [rank]
 						@copy @data
 						@mark td
 			| el = target.closest ".infobox.biota .binomial, .infobox.taxobox .binomial"
-				if combo is \RMB
+				if combo in [\RMB \LMB]
 					@data = @extract el,
-						tab: @ranks.species.tab
+						ranks: [@ranks.species]
 					@copy @data
 					@mark el
 			| target is target.closest ".infobox.biota, .infobox.taxobox" ?.querySelector \th
-				if combo is \RMB
+				if combo in [\RMB \LMB]
 					@mark target
 					doCombo \Slash,, target.innerText
-			| el = target.closest "
-			.infobox.biota li, .infobox.biota dd, .infobox.biota p, .infobox.biota td:only-child,
-			.infobox.taxobox li, .infobox.taxobox dd, .infobox.taxobox p, .infobox.taxobox td:only-child"
-				if combo is \RMB
-					if tr = target.closest \tr ?.previousElementSibling
-						rankName = tr.innerText
-							.replace \Type ""
-							.trim!
-						rank = @findRank \prefixes (.startsRegex.test rankName)
-						if rank
-							tab = rank.tab
-					switch el.localName
-					| \li \dd
-						el .= parentElement
-						node = el.children
-					| \p
-						node = el.innerText
-							.replace /\u2013.*/ ""
-							.replace /\(but see text\)/ ""
-					else
-						node = el.innerText
-							.trim!
-							.split \\n 1 .0
-							.trim!
-					@data = @extract node,
-						tab: tab
-					@copy @data
-					@mark el
-			| target.localName is \p and t.wikispecies
-				if combo is \RMB
-					text = target.innerText.trim!split /\n+/ .[* - 1]trim!
-					if rank = @findRank \prefixes (.startsRegex.test text)
-						tab = rank.tab
-					text = text
-						.replace /^.+?:\s*/ ""
-						.replace /\s+[-\u2013]\s+/g \\n
-					@data = @extract text,
-						tab: tab
-					@copy @data
-					@mark target
 			| target.localName in [\li \dd]
 				ul = target.parentElement
 				switch combo
-				| \RMB
+				| \RMB \LMB
 					@data = @extract ul.children,
 						deep: yes
 					@copy @data
 					@mark ul
-				| \Alt+RMB \Shift+Alt+RMB
-					@openLinksExtract ul.children, combo is \Shift+Alt+RMB
+				| \Alt+RMB \Shift+Alt+RMB \Alt+LMB \Shift+Alt+LMB
+					@openLinksExtract ul.children, combo in [\Shift+Alt+RMB \Shift+Alt+LMB]
+			| el = target.closest "
+			.infobox.biota p, .infobox.biota td:only-child,
+			.infobox.taxobox p, .infobox.taxobox td:only-child"
+				if combo in [\RMB \LMB]
+					if tr = target.closest \tr ?.previousElementSibling
+						rankName = tr.innerText
+							.replace \Type ""
+							.trim!
+						rank = @findRank \prefixes (.regex.test rankName)
+					switch el.localName
+					| \p
+						text = el.innerText
+							.replace /\u2013.*/ ""
+							.replace /\(but see text\)/ ""
+					else
+						text = el.innerText
+							.trim!
+							.split \\n 1 .0
+							.trim!
+					@data = @extract text,
+						ranks: [rank]
+					@copy @data
+					@mark el
+			| target.localName is \p and t.wikispecies
+				if combo in [\RMB \LMB]
+					text = target.innerText.trim!split /\n+/ .[* - 1]trim!
+					rank = @findRank \prefixes (.startsRegex.test text)
+					text = text
+						.replace /^.+?:\s*/ ""
+						.replace /\s+[-\u2013]\s+/g \\n
+					@data = @extract text,
+						ranks: [rank]
+					@copy @data
+					@mark target
 			| td = target.closest \td
 				table = td.closest \table
 				col = @tableCol td
 				switch combo
-				| \RMB
+				| \RMB \LMB
 					data = @extract col
 					@copy data
 					@mark col
-				| \Alt+RMB \Shift+Alt+RMB
-					@openLinksExtract col, combo is \Shift+Alt+RMB
+				| \Alt+RMB \Shift+Alt+RMB \Alt+LMB \Shift+Alt+LMB
+					@openLinksExtract col, combo in [\Shift+Alt+RMB \Shift+Alt+LMB]
 			| target.matches '#firstHeading, h1, b'
-				if combo is \RMB
+				if combo in [\RMB \LMB]
 					@mark target
 					doCombo \Slash,, target.innerText
 		else
@@ -1053,12 +1147,20 @@ App =
 				else
 					@data .= replace /(?!^)(?=\n|$)/g \*
 				@copy @data
-			| \O
+			| \O \Shift+O
 				text = await navigator.clipboard.readText!
-				location.href = "https://en.wikipedia.org/wiki/#text"
-			| \Shift+O
-				text = await navigator.clipboard.readText!
-				window.open "https://en.wikipedia.org/wiki/#text"
+				url = "https://en.wikipedia.org/wiki/#text"
+				if combo is \O
+					location.href = url
+				else
+					window.open url
+			| \G \Shift+G
+				q = firstHeading.innerText - \Category:
+				url = "https://google.com/search?tbm=isch&source=hp&q=#q"
+				if combo is \G
+					location.href = url
+				else
+					window.open url
 			| \I+U
 				if blob = await @readCopiedImgBlob!
 					base64 = await @readAsBase64 blob
@@ -1067,7 +1169,25 @@ App =
 				@getImgurAlbum!
 			| \I+T
 				@getImgurToken!
-			| \W+P
+			| \I+L
+				{data} = await (await fetch "https://api.imgur.com/3/credits",
+					headers:
+						"Authorization": "Bearer #@token"
+				)json!
+				now = Date.now! // 1000
+				@modal "Giới hạn Imgur", 340, (modal) ~>
+					m \._row._wrap,
+						m \._col9._mb2 "Giới hạn người dùng"
+						m \._col3._mb2 data.UserLimit
+						m \._col9._mb2 "Giới hạn người dùng còn lại"
+						m \._col3._mb2 data.UserRemaining
+						m \._col9._mb2 "Thời gian reset giới hạn người dùng"
+						m \._col3._mb2 (data.UserReset - now) // 60 + " phút"
+						m \._col9._mb2 "Giới hạn ứng dụng"
+						m \._col3._mb2 data.ClientLimit
+						m \._col9._mb2 "Giới hạn ứng dụng còn lại"
+						m \._col3._mb2 data.ClientRemaining
+			| \W+O
 				location.href = \https://en.wikipedia.org/wiki/Special:Preferences
 			| \W+E
 				location.href = document.querySelector '#ca-edit a' .href
@@ -1084,29 +1204,44 @@ App =
 			history.forward!
 		| \W
 			@closeTab!
+		m.redraw!
 
 	view: ->
 		m.fragment do
 			if t.wikiPage
 				m \._sideLeft._column._px5._py4,
-					m \._col,
+					m \._col._scroll,
 						m \#_toc._mt6
+					m \._col0._mt3,
+						@comboRanks.map (rank) ~>
+							m \div,
+								style: @style do
+									marginLeft: rank.lv * 4
+								rank.tab + rank.name
 			m \._sideCenter._col,
 				m \._notifies,
 					@notifies.map (notify) ~>
 						m \._notify m.trust notify.html
 				m \._modals._row._center,
-					@modals.map (modal) ~>
+					@modals.map (modal, i) ~>
 						m \._modal._column,
+							key: modal
 							style: @style do
 								width: modal.width
-							m \._row._middle._px3._pt3,
-								m \._col._textTruncate._textBold modal.title
+								marginTop: i * 32
+							onbeforeremove: (vnode) ~>
+								new Promise (resolve) !~>
+									vnode.dom.classList.add \_fadeOut95
+									setTimeout resolve, 1000
+							m \._row._middle._pl4._pr3._pt3,
+								m \._col._textTruncate._textBold,
+									modal.title
 								m \button._modalClose,
 									onclick: !~>
 										modal.close!
 									"\u2a09"
-							m \._col._scroll._m3 modal.view modal
+							m \._col._scroll._mx4._my3,
+								modal.view modal
 			if t.wikiPage
 				m \._sideRight._column._px5._py4,
 					if @summ

@@ -2,13 +2,12 @@ do !->>
 	require! {
 		fs
 		vm
-		"node-fetch": fetch
+		"node-fetch": global.fetch
 		\live-server
 		\./libs/livescript.min.js
 	}
 	process.chdir __dirname
 
-	global.fetch = fetch
 	code = fs.readFileSync \middleware.ls \utf8
 	code = livescript.compile code
 	await vm.runInThisContext code
