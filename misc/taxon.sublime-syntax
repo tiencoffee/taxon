@@ -6,22 +6,21 @@ file_extensions:
 scope: text.taxon
 contexts:
   main:
-    - match: "#"
-      push:
-        - meta_scope: comment
-        - match: $
-          pop: true
-    - match: ^\t{0,8}[^#\t*~]+
+    - match: ^\t{0,8}[^#\t*(]+
       scope: keyword
-    - match: ^\t{9,14}[^#\t*~]+
+    - match: ^\t{9,14}[^#\t*(]+
       scope: variable.parameter
-    - match: ^\t{15,22}[^#\t*~]+
+    - match: ^\t{15,22}[^#\t*(]+
       scope: storage.type
-    - match: ^\t{23,25}[^#\t*~]+
+    - match: ^\t{23,25}[^#\t*(]+
       scope: entity.name.class
-    - match: ^\t{26,28}[^#\t*~]+
+    - match: ^\t{26,28}[^#\t*(]+
       scope: constant.numeric
-    - match: ^\t{29,32}[^#\t*~]+
+    - match: ^\t{29,32}[^#\t*(]+
       scope: string
-    - match: "[*~]"
+    - match: \*
       scope: keyword
+    - match: (?<= )\(.*?\)
+      scope: keyword
+    - match: (?<= )# .+$
+      scope: comment

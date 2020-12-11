@@ -1156,7 +1156,7 @@ App =
 					window.open url
 			| \G \Shift+G
 				q = firstHeading.innerText - \Category:
-				url = "https://google.com/search?tbm=isch&source=hp&q=#q"
+				url = "https://google.com/search?tbm=isch&q=#q"
 				if combo is \G
 					location.href = url
 				else
@@ -1190,7 +1190,7 @@ App =
 			| \W+O
 				location.href = \https://en.wikipedia.org/wiki/Special:Preferences
 			| \W+E
-				location.href = document.querySelector '#ca-edit a' .href
+				location.href = document.querySelector '#ca-ve-edit a' .href
 			| \W+H
 				location.href = document.querySelector '#ca-history a' .href
 			| \W+M

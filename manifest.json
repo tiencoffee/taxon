@@ -6,16 +6,10 @@
 	"description": "taxon",
 	"content_scripts": [{
 		"matches": [
-			"*://*.planetcatfish.com/*",
-			"*://*.fishbase.se/*",
-			"*://*.fishbase.in/*",
-			"*://*.bugguide.net/*",
-			"*://*.biolib.cz/*",
-			"*://*.wikipedia.org/*",
-			"*://*.wikimedia.org/*",
-			"*://imgur.com/*",
-			"*://www.google.com/*",
-			"*://www.google.com.vn/*"
+			"<all_urls>"
+		],
+		"exclude_matches": [
+			"*://localhost/*"
 		],
 		"js": [
 			"libs/livescript.min.js",

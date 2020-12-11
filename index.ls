@@ -1,12 +1,14 @@
+lineH = 18
 data = await (await fetch \tree.taxon)text!
 data /= \\n
-tree = [0 \Life no,, "Sự sống"]
+tree = [0 \Life no, no, [], "Sự sống"]
 refs = [tree]
-headRegex = /^(\t*)(.+?)(\*?)$/
-textRegex = /^(\/|\?|@|https?\:\/\/|[a-zA-Z0-9]{7}( [;|]|$))/
-imgurIdRegex = /^[a-zA-Z0-9]{7}$/
+headRegex = /^(\t*)(.+?)(\*)?( \(.*?\))?$/
+textRegex = /^(\/|\?|@|https?\:\/\/|[a-zA-Z\d]{7}( [;|]|$))/
+imgurIdRegex = /^[a-zA-Z\d]{7}$/
 lines = []
 index = -1
+code = void
 
 mapImggFn = (imgg) ~>
 	[src, captn] = imgg.split " ; "
@@ -15,14 +17,17 @@ mapImggFn = (imgg) ~>
 		if imgurIdRegex.test src
 			src = "https://i.imgur.com/#{src}m.png"
 		else if src.0 is \/
-			src = "https://upload.wikimedia.org/wikipedia/commons/thumb#src/320px-#{src.slice 6}"
+			src = "https://upload.wikimedia.org/wikipedia/commons/thumb#src/320px-#{src.substring 6}"
 		{src, captn}
+
 for line in data
 	imgs1 = void
 	[head, text1, tail] = line.split " # "
-	[, lv1, name1, sym1] = headRegex.exec head
+	[, lv1, name1, ex1, disam1] = headRegex.exec head
 	lv1 = lv1.length + 1
 	name1 = " " if name1 is \_
+	disam1 .= replace " " \_ if disam1
+	ex1 = Boolean ex1
 	if text1
 		if textRegex.test text1
 			tail = text1
@@ -31,26 +36,28 @@ for line in data
 			imgs1 = tail
 				.split " | "
 				.map mapImggFn
-	node = [lv1, name1, sym1,, text1, imgs1]
+	node = [lv1, name1, ex1, disam1,, text1, imgs1]
 	if refs.some (.0 >= lv1)
 		refs .= filter (.0 < lv1)
 	ref = refs[* - 1]
-	ref[]3.push node
+	ref[]4.push node
 	refs.push node
 
 addNode = (node, parentLv, parentName, extinct, chrs, first, last, nextSiblExtinct) !~>
-	[lv, name, sym, childs, text, imgs] = node
-	extinct = yes if sym is \*
+	[lv, name, ex, disam, childs, text, imgs] = node
+	# if name and name.length is 4 and name isnt /^[? ]$/ and lv < 35
+	# 	console.log name, node
+	extinct = yes if ex
 	if parentLv >= 0
 		lvRange = lv - parentLv - 1
 		if extinct
-			chrs2 = (chrs + if first => "╴╴"repeat(lvRange) + \╴┐ else "  "repeat(lvRange) + " ¦")
-				.replace /\ (?=[╴─┐])/ \'
-				.replace /│(?=[─┐])/ \├
+			chrs2 = (chrs + if first => "╸╸"repeat(lvRange) + \╸┓ else "  "repeat(lvRange) + " ╏")
+				.replace /\ (?=[╸━┓])/ \╹
+				.replace /┃(?=[━┓])/ \┣
 		else
-			chrs2 = (chrs + if first => "──"repeat(lvRange) + \─┐ else "  "repeat(lvRange) + " │")
-				.replace /\ (?=[╴─┐])/ \└
-				.replace /[│¦](?=[─┐])/ \├
+			chrs2 = (chrs + if first => "━━"repeat(lvRange) + \━┓ else "  "repeat(lvRange) + " ┃")
+				.replace /\ (?=[╸━┓])/ \┗	
+				.replace /[┃╏](?=[━┓])/ \┣
 	else
 		chrs2 = "  "
 	if lv >= 35
@@ -62,12 +69,13 @@ addNode = (node, parentLv, parentName, extinct, chrs, first, last, nextSiblExtin
 		text: text
 		imgs: imgs
 		extinct: extinct
+		disam: disam
 		chrs: chrs2
 		fullName: fullName
 	lines.push line
 	if childs
 		line.childs = []
-		chrs += "  "repeat(lvRange) + (last and "  " or (if extinct or nextSiblExtinct => " ¦" else " │"))
+		chrs += "  "repeat(lvRange) + (last and "  " or (if extinct or nextSiblExtinct => " ╏" else " ┃"))
 		if (lv < 31 or lv > 34) and name not in [\? " "]
 			parentName = fullName or name
 		lastIndex = childs.length - 1
@@ -75,7 +83,7 @@ addNode = (node, parentLv, parentName, extinct, chrs, first, last, nextSiblExtin
 			addNode child, lv, parentName, extinct, chrs, not i, i is lastIndex, childs[i + 1]?2
 
 addNode tree, -1 "" no "" yes yes
-document.body.style.height = lines.length * 15 + \px
+document.body.style.height = lines.length * lineH + \px
 
 App =
 	oninit: !->
@@ -85,9 +93,9 @@ App =
 		@lines = []
 		@start = void
 		@len = 0
+		@finding = no
 		@findLines = []
 		@findIndex = 0
-		@finding = no
 		@popper = null
 		@xhr = null
 		@chrsRanks = [
@@ -113,13 +121,13 @@ App =
 		localStorage.taxonomyStart = start
 		@lines = lines.slice start, start + @len
 		@start = start
-		scrollTo 0 start * 15 unless noScroll
+		scrollTo 0 start * lineH unless noScroll
 		m.redraw!
 
 	getRankName: (lv) ->
 		@chrsRanks.find (.2 > lv) .0
 
-	mouseenterNode: (line, event) !->
+	mouseenterName: (line, event) !->
 		unless line.name in [\? " "]
 			count = 0
 			summary = ""
@@ -176,7 +184,7 @@ App =
 									m.redraw.sync!
 									@popper.update!
 			try
-				q = line.fullName or line.name
+				q = (line.fullName or line.name) + (line.disam or "")
 				data = await m.request do
 					url: "https://vi.wikipedia.org/api/rest_v1/page/summary/#q"
 					background: yes
@@ -190,22 +198,40 @@ App =
 			m.redraw.sync!
 			@popper.update!
 
-	mouseleaveNode: !->
+	mouseleaveName: !->
 		if @popper
 			@xhr?abort!
 			@popper.destroy!
 			@popper = null
 			m.mount popupEl
 
-	clickNode: (line) !->
+	mousedownName: (line, event) !->
 		unless line.name in ["" \?]
-			lang = event.altKey and \vi or \en
-			open "https://#lang.wikipedia.org/wiki/#{line.fullName or line.name}" \_blank
+			name = line.fullName or line.name
+			switch event.which
+			| 1
+				lang = event.altKey and \vi or \en
+				window.open "https://#lang.wikipedia.org/wiki/#name" \_blank
+			| 2
+				event.preventDefault!
+				navigator.clipboard.writeText line.name
 
-	contextmenuNode: (line, event) !->
+	contextmenuName: (line, event) !->
 		event.preventDefault!
-		unless line.name in ["" \?]
-			open "https://google.com/search?tbm=isch&q=#{line.fullName or line.name}" \_blank
+		name = line.fullName or line.name
+		window.open "https://google.com/search?tbm=isch&q=#name" \_blank
+
+	mousedownImg: (img, event) !->
+		{target} = event
+		{src} = img
+		switch event.which
+		| 1
+			if src.includes \upload.wikimedia.org
+				width = 10 * Math.round target.naturalWidth / target.naturalHeight * 80
+				src .= replace /\/320px-/ "/#{width}px-"
+			else
+				src .= replace /(?<=:\/\/)i\.|m\.png$/g ""
+			window.open src, \_blank
 
 	find: (val) !->
 		if val = val.trim!toLowerCase!
@@ -235,10 +261,11 @@ App =
 
 	oncreate: !->
 		document.body.onscroll = !~>
-			@goLine Math.ceil(scrollY / 15), yes
+			@goLine Math.ceil(scrollY / lineH), yes
 		window.onkeydown = (event) !~>
 			unless event.repeat
-				switch event.code
+				{code} := event
+				switch code
 				| \KeyF
 					if @finding
 						if document.activeElement is document.body
@@ -248,12 +275,19 @@ App =
 						@finding = yes
 						setTimeout !~>
 							findInputEl.focus!
+						, 5
 						event.preventDefault!
+						m.redraw!
 				| \Escape
-					@finding = no
-				m.redraw!
+					if @finding
+						@finding = no
+						@findLines = []
+						@findIndex = 0
+						m.redraw!
+		window.onkeyup = (event) !~>
+			code := void
 		do window.onresize = !~>
-			@len = Math.ceil innerHeight / 15
+			@len = Math.ceil innerHeight / lineH
 			@goLine!
 
 	view: ->
@@ -267,22 +301,25 @@ App =
 								class: rank.0
 								line.chrs.substring rank.1 * 2, rank.2 * 2
 						m \.node,
-							m \b,
+							m \span,
 								class: @getRankName line.lv
 								onmouseenter: !~>
-									@mouseenterNode line, it
-								onmouseleave: @mouseleaveNode
-								onclick: !~>
-									@clickNode line
+									@mouseenterName line, it
+								onmouseleave: @mouseleaveName
+								onmousedown: !~>
+									@mousedownName line, it
 								oncontextmenu: !~>
-									@contextmenuNode line, it
+									@contextmenuName line, it
 								line.name
 							if line.text
 								m \span.text,
 									"\u2014 #{line.text}"
 							line.imgs?map (img) ~>
 								if img
-									m \img.img {img.src}
+									m \img.img,
+										src: img.src
+										onmousedown: !~>
+											@mousedownImg img, it
 			if @finding
 				m \#findEl,
 					m \input#findInputEl,
