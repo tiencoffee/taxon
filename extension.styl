@@ -25,6 +25,24 @@ body
 ._sideRight
 	width 20%
 	background #f8f9fa
+._button
+	padding 4px 8px
+	border 0
+	border-radius 8px
+	font inherit
+	background #07d
+	color #fff
+	outline 0
+._input
+	padding 4px 8px
+	border 0
+	border-radius 8px
+	font inherit
+	background #f0f1f2
+	outline 0
+	&:focus
+		box-shadow 0 0 0 2px #07d
+		z-index 1
 ._notifies
 	display flex
 	flex-direction column
@@ -39,6 +57,7 @@ body
 	background #112
 	color #fff
 	animation _fadeIn5 .1s forwards
+	z-index 2050
 ._modals
 	pointer-events none
 ._modal
@@ -72,7 +91,7 @@ body
 ._mark
 	position fixed
 	pointer-events none
-	z-index 2050
+	z-index 2060
 @keyframes _fadeIn5
 	from
 		transform scale(.5)
@@ -318,7 +337,7 @@ for align, a in aligns
 ._textNowrap
 	white-space nowrap
 	word-break break-word
-._textTtruncate
+._textTruncate
 	overflow hidden
 	text-overflow ellipsis
 	white-space nowrap

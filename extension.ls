@@ -425,6 +425,8 @@ App =
 			@els
 				..viLang = document.querySelector ".interlanguage-link-target[lang=vi]"
 				..enLang = document.querySelector ".interlanguage-link-target[lang=en]"
+				..esLang = document.querySelector ".interlanguage-link-target[lang=es]"
+				..frLang = document.querySelector ".interlanguage-link-target[lang=fr]"
 				..commons = document.querySelector ".wb-otherproject-commons> a"
 				..species = document.querySelector ".wb-otherproject-species> a"
 				..infoboxImg = document.querySelector ".infobox.biota a.image> img, .infobox.taxobox a.image> img"
@@ -681,6 +683,9 @@ App =
 					notify.update "Không thể upload ảnh Imgur"
 			catch
 				notify.update "Upload ảnh Imgur lỗi: #{e.message}"
+				if type is \URL
+					base64 = await (await fetch "http://localhost:8080/q/img/#image")text!
+					@uploadImgur base64, \base64
 		else
 			@notify "Chưa có token hoặc album"
 
@@ -712,9 +717,7 @@ App =
 									m \small album.title
 							m \._col._p2._column._center._round8._hover,
 								onclick: !~>
-									if newAlbum = await @modalCreateAlbum!
-										albums.push newAlbum
-										m.redraw!
+									@modalCreateAlbum!
 								m \h1._border0 \+
 								m \small "Tạo album"
 					resolve album
@@ -740,15 +743,20 @@ App =
 								body: formData
 								background: yes
 							if res.success
+								albumId = res.data.id
+								@notify "Đã tạo album Imgur: #albumId"
 								modal.close res.data
+								@getImgurAlbum albumId
 							else
 								@notify "Tạo album Imgur thất bại"
 					m \p,
 						m \div "Tên album:"
-						m \input._mt2,
+						m \input._input._mt2,
 							name: \title
 							required: yes
-						m \button._mt2 \OK
+							autocomplete: \off
+						m \._textRight._mt2,
+							m \button._button \OK
 			resolve data
 
 	getImgurToken: ->
@@ -762,16 +770,12 @@ App =
 						resolve @token
 			, 1000
 
-	getImgurAlbum: ->
-		new Promise (resolve) !~>
-			album = await @modalGetAlbums!
-			if album
-				chrome.storage.local.set {album} !~>
-					@album = album
-					@notify "Đã đặt album Imgur: #@album"
-					resolve album
-			else
-				resolve!
+	getImgurAlbum: (albumId) !->
+		album = albumId or await @modalGetAlbums!
+		if album
+			chrome.storage.local.set {album} !~>
+				@album = album
+				@notify "Đã đặt album Imgur: #@album"
 
 	notify: (html, ms) ->
 		notify =
@@ -817,7 +821,7 @@ App =
 		opts = {
 			notMatchText: \?
 			deep: no
-			ranks: @comboRanks.length
+			ranks: @comboRanks
 			...opts
 		}
 		notMatchTab = void
@@ -907,7 +911,6 @@ App =
 				.replace /["'?()]/g ""
 			if /\ cf\. |(?<!sub)sp\. | sp\. (?![a-z])/ is text
 				continue
-			console.log text
 			tab = void
 			rank = opts.ranks[index]
 			rank ?= @findRank \prefixes (.startsRegex.test targetText)
@@ -1138,7 +1141,13 @@ App =
 			| \C
 				(@els.commons or @els.enLang)?click!
 			| \D
+				(@els.enLang or @els.viLang)?click!
+			| \D+V
 				(@els.viLang or @els.enLang)?click!
+			| \D+E
+				(@els.esLang or @els.enLang)?click!
+			| \D+F
+				(@els.frLang or @els.enLang)?click!
 			| \S
 				(@els.species or @els.enLang)?click!
 			| \E
@@ -1240,7 +1249,7 @@ App =
 									onclick: !~>
 										modal.close!
 									"\u2a09"
-							m \._col._scroll._mx4._my3,
+							m \._col._scroll._px4._py3,
 								modal.view modal
 			if t.wikiPage
 				m \._sideRight._column._px5._py4,

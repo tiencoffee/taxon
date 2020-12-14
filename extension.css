@@ -27,7 +27,7 @@ body, h1, h2, h3, h4, h5, h6, p {
 .mw-indicators,
 .mw-mmv-download-dialog,
 .navbox,
-.reference,
+html:not(.ve-active) .reference,
 .sisterproject,
 .ambox,
 .portal.tright,

@@ -7,8 +7,7 @@ global.middleware = (req, res, next) !->
 			data = await fetch val
 			type = data.headers.get \Content-Type
 			buf = await data.buffer!
-			base64 = buf.toString \base64
-			dataUrl = "data:#type;base64,#base64"
+			base64 = base64url buf
 			res.setHeader \Content-Type \plain/text
-			res.end dataUrl
+			res.end base64
 	next!

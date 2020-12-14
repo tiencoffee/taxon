@@ -10,16 +10,6 @@ lines = []
 index = -1
 code = void
 
-mapImggFn = (imgg) ~>
-	[src, captn] = imgg.split " ; "
-	unless src is \?
-		captn = "" if captn is \.
-		if imgurIdRegex.test src
-			src = "https://i.imgur.com/#{src}m.png"
-		else if src.0 is \/
-			src = "https://upload.wikimedia.org/wikipedia/commons/thumb#src/320px-#{src.substring 6}"
-		{src, captn}
-
 for line in data
 	imgs1 = void
 	[head, text1, tail] = line.split " # "
@@ -35,7 +25,15 @@ for line in data
 		if tail
 			imgs1 = tail
 				.split " | "
-				.map mapImggFn
+				.map (imgg) ~>
+					[src, captn] = imgg.split " ; "
+					unless src is \?
+						captn = void if captn is \.
+						if imgurIdRegex.test src
+							src = "https://i.imgur.com/#{src}m.png"
+						else if src.0 is \/
+							src = "https://upload.wikimedia.org/wikipedia/commons/thumb#src/320px-#{src.substring 6}"
+						{src, captn}
 	node = [lv1, name1, ex1, disam1,, text1, imgs1]
 	if refs.some (.0 >= lv1)
 		refs .= filter (.0 < lv1)
@@ -112,153 +110,6 @@ App =
 			[\subspecies 36 39]
 		]
 
-	goLine: (start = @start, noScroll) !->
-		start ?= +localStorage.taxonomyStart or 0
-		if start < 0
-			start = 0
-		else if start > lines.length - @len + 1
-			start = lines.length - @len + 1
-		localStorage.taxonomyStart = start
-		@lines = lines.slice start, start + @len
-		@start = start
-		scrollTo 0 start * lineH unless noScroll
-		m.redraw!
-
-	getRankName: (lv) ->
-		@chrsRanks.find (.2 > lv) .0
-
-	mouseenterName: (line, event) !->
-		unless line.name in [\? " "]
-			count = 0
-			summary = ""
-			width = 320
-			popup =
-				view: ~>
-					m \#popupBody,
-						style:
-							minWidth: width + \px
-						m \#popupName,
-							line.fullName or line.name
-						if line.text
-							m \#popupText that
-						if line.imgs
-							m \#popupGenders,
-								class: "popupTwoImg" if line.imgs.0 and line.imgs.1
-								line.imgs.map (img, i) ~>
-									if img
-										m \.popupGender,
-											m \.popupPicture,
-												m \img.popupBgImg,
-													src: img.src
-												m \img.popupImg,
-													src: img.src
-													onload: @onLoadPopupImg
-											if img.captn
-												m \.popupCaptn that
-											if line.imgs.length is 2
-												m \.popupGenderCaptn i && \Cái || \Đực
-						if summary
-							m \#popupSummary m.trust summary
-			m.mount popupEl, popup
-			@popper = Popper.createPopper event.target, popupEl,
-				placement: \left
-				strategy: \fixed
-				modifiers:
-					* name: \offset
-						options:
-							offset: [0 18]
-					* name: \preventOverflow
-						options:
-							padding: 8
-					* name: \customUpdate
-						enabled: yes
-						phase: \afterWrite
-						fn: !~>
-							if count++ < 120
-								rect = popupEl.getBoundingClientRect!
-								oldWidth = width
-								width := rect.width - 16
-								if rect.height > innerHeight - 8
-									width += 8
-								unless width is oldWidth
-									m.redraw.sync!
-									@popper.update!
-			try
-				q = (line.fullName or line.name) + (line.disam or "")
-				data = await m.request do
-					url: "https://vi.wikipedia.org/api/rest_v1/page/summary/#q"
-					background: yes
-					config: (@xhr) !~>
-				if data.type is \standard and data.extract_html
-					[summary] = data.extract_html is /<p>.+?<\/p>/
-				else throw
-				# line.imgs = [[[data.thumbnail.source, no]]] if data.thumbnail and not line.imgs
-			catch
-				summary = "Không có dữ liệu"
-			m.redraw.sync!
-			@popper.update!
-
-	mouseleaveName: !->
-		if @popper
-			@xhr?abort!
-			@popper.destroy!
-			@popper = null
-			m.mount popupEl
-
-	mousedownName: (line, event) !->
-		unless line.name in ["" \?]
-			name = line.fullName or line.name
-			switch event.which
-			| 1
-				lang = event.altKey and \vi or \en
-				window.open "https://#lang.wikipedia.org/wiki/#name" \_blank
-			| 2
-				event.preventDefault!
-				navigator.clipboard.writeText line.name
-
-	contextmenuName: (line, event) !->
-		event.preventDefault!
-		name = line.fullName or line.name
-		window.open "https://google.com/search?tbm=isch&q=#name" \_blank
-
-	mousedownImg: (img, event) !->
-		{target} = event
-		{src} = img
-		switch event.which
-		| 1
-			if src.includes \upload.wikimedia.org
-				width = 10 * Math.round target.naturalWidth / target.naturalHeight * 80
-				src .= replace /\/320px-/ "/#{width}px-"
-			else
-				src .= replace /(?<=:\/\/)i\.|m\.png$/g ""
-			window.open src, \_blank
-
-	find: (val) !->
-		if val = val.trim!toLowerCase!
-			@findLines = lines.filter ~>
-				it.name.toLowerCase!includes val or
-				it.text?toLowerCase!includes val
-			if @findIndex >= @findLines.length
-				@findIndex = @findLines.length - 1
-		else
-			@findLines = []
-		if @findLines.length
-			@findGo!
-		m.redraw!
-
-	findGo: (num = 0) !->
-		if @findLines.length
-			@findIndex = (@findIndex + num) %% @findLines.length
-			@goLine @findLines[@findIndex]index - 4
-
-	classLine: (line) ->
-		className = \line
-		className += " lineFind" if @finding and line is @findLines[@findIndex]
-		className
-
-	onLoadPopupImg: !->
-		@popper?update!
-
 	oncreate: !->
 		document.body.onscroll = !~>
 			@goLine Math.ceil(scrollY / lineH), yes
@@ -289,6 +140,152 @@ App =
 		do window.onresize = !~>
 			@len = Math.ceil innerHeight / lineH
 			@goLine!
+
+	goLine: (start = @start, noScroll) !->
+		start ?= +localStorage.taxonomyStart or 0
+		if start < 0
+			start = 0
+		else if start > lines.length - @len + 1
+			start = lines.length - @len + 1
+		localStorage.taxonomyStart = start
+		@lines = lines.slice start, start + @len
+		@start = start
+		scrollTo 0 start * lineH unless noScroll
+		m.redraw!
+
+	getRankName: (lv) ->
+		@chrsRanks.find (.2 > lv) .0
+
+	find: (val) !->
+		if val = val.trim!toLowerCase!
+			@findLines = lines.filter ~>
+				it.name.toLowerCase!includes val or
+				it.text?toLowerCase!includes val
+			if @findIndex >= @findLines.length
+				@findIndex = @findLines.length - 1
+		else
+			@findLines = []
+		if @findLines.length
+			@findGo!
+		m.redraw!
+
+	findGo: (num = 0) !->
+		if @findLines.length
+			@findIndex = (@findIndex + num) %% @findLines.length
+			@goLine @findLines[@findIndex]index - 4
+
+	classLine: (line) ->
+		className = \line
+		className += " lineFind" if @finding and line is @findLines[@findIndex]
+		className
+
+	mousedownImg: (img, event) !->
+		{target} = event
+		{src} = img
+		switch event.which
+		| 1
+			if src.includes \upload.wikimedia.org
+				width = 10 * Math.round target.naturalWidth / target.naturalHeight * 80
+				src .= replace /\/320px-/ "/#{width}px-"
+			else
+				src .= replace /(?<=:\/\/)i\.|m\.png$/g ""
+			window.open src, \_blank
+
+	mousedownName: (line, event) !->
+		unless line.name in ["" \?]
+			name = line.fullName or line.name
+			switch event.which
+			| 1
+				lang = event.altKey and \vi or \en
+				window.open "https://#lang.wikipedia.org/wiki/#name" \_blank
+			| 2
+				event.preventDefault!
+				navigator.clipboard.writeText line.name
+
+	contextmenuName: (line, event) !->
+		event.preventDefault!
+		name = line.fullName or line.name
+		window.open "https://google.com/search?tbm=isch&q=#name" \_blank
+
+	mouseleaveName: !->
+		if @popper
+			@xhr?abort!
+			@popper.destroy!
+			@popper = null
+			m.mount popupEl
+
+	mouseenterName: (line, event) !->
+		unless line.name in [\? " "]
+			count = 0
+			summary = void
+			{imgs} = line
+			width = 320
+			popup =
+				view: ~>
+					m \#popupBody,
+						style:
+							minWidth: width + \px
+						m \#popupName,
+							line.fullName or line.name
+						if line.text
+							m \#popupText that
+						if imgs
+							m \#popupGenders,
+								class: "popupTwoImg" if imgs.0 and imgs.1
+								imgs.map (img, i) ~>
+									if img
+										m \.popupGender,
+											m \.popupPicture,
+												m \img.popupBgImg,
+													src: img.src
+												m \img.popupImg,
+													src: img.src
+													onload: !~>
+														@popper?forceUpdate!
+											if img.captn
+												m \.popupCaptn that
+											if imgs.length is 2
+												m \.popupGenderCaptn i && \Cái || \Đực
+						if summary
+							m \#popupSummary m.trust summary
+			m.mount popupEl, popup
+			@popper = Popper.createPopper event.target, popupEl,
+				placement: \left
+				strategy: \fixed
+				modifiers:
+					* name: \offset
+						options:
+							offset: [0 18]
+					* name: \preventOverflow
+						options:
+							padding: 8
+					* name: \customUpdate
+						enabled: yes
+						phase: \afterWrite
+						fn: !~>
+							if count++ < 120
+								rect = popupEl.getBoundingClientRect!
+								oldWidth = width
+								width := rect.width - 16
+								if rect.height > innerHeight - 8
+									width += 8
+								unless width is oldWidth
+									m.redraw.sync!
+									@popper.forceUpdate!
+			try
+				q = (line.fullName or line.name) + (line.disam or "")
+				data = await m.request do
+					url: "https://vi.wikipedia.org/api/rest_v1/page/summary/#q"
+					background: yes
+					config: (@xhr) !~>
+				if data.type is \standard and data.extract_html
+					[summary] = data.extract_html is /<p>.+?<\/p>/
+				else throw
+				# imgs = [src: data.thumbnail.source] if data.thumbnail and not line.imgs
+			catch
+				summary = "Không có dữ liệu"
+			m.redraw.sync!
+			@popper.forceUpdate!
 
 	view: ->
 		m \div,

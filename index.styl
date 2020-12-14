@@ -72,6 +72,7 @@ body
 	padding 8px 12px
 	border-radius 4px 4px 4px 8px
 	display flex
+	align-items center
 	background #fff
 #findInputEl
 	width 0
@@ -82,17 +83,23 @@ body
 	outline 0
 #findTextEl
 	color #888
+	font-size 10pt
 #popupBody
 	max-width min-content
 	padding 8px
 	border-radius 8px
 	display flex
 	flex-direction column
-	font-family "Roboto",sans-serif
 	text-align center
 	background #fff
-	transform-origin 100% 50%
+	overflow hidden
+	animation popup 50ms forwards
 	pointer-events none
+@keyframes popup
+	from
+		transform scale(.96)
+	to
+		transform scale(1)
 .popupTwoImg
 	.popupImg
 		max-width 280px

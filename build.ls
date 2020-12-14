@@ -3,6 +3,7 @@ do !->>
 		fs
 		vm
 		"node-fetch": global.fetch
+		"base64url": global.base64url
 		\live-server
 		\./libs/livescript.min.js
 	}
