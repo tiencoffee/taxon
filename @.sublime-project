@@ -9,6 +9,7 @@
 		// "font_size": 11,
 		// "tab_size": 4,
 		// "wrap_width": 56
+		"wrap_width": 100
 	},
 	"build_systems": [{
 		"name": "Build",

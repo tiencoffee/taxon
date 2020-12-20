@@ -1,11 +1,12 @@
-lineH = 18
+lineH = 15
 data = await (await fetch \tree.taxon)text!
 data /= \\n
-tree = [0 \Life no, no, [], "Sự sống"]
+tree = [0 \Organism no \/Sinh_vật [] "Sinh vật"]
 refs = [tree]
-headRegex = /^(\t*)(.+?)(\*)?( \(.*?\))?$/
-textRegex = /^(\/|\?|@|https?\:\/\/|[a-zA-Z\d]{7}( [;|]|$))/
-imgurIdRegex = /^[a-zA-Z\d]{7}$/
+headRegex = /^(\t*)(.+?)(\*)?( .+)?$/
+tailRegex = /^(\/|\?|:|https?:\/\/|[a-zA-Z\d]{7}( [;|]|$))/
+inaturalistRegex = /^:(\d+)([epJEP]?)$/
+inaturalistExts = "": \jpg e: \jpeg p: \png J: \JPG E: \JPEG P: \PNG
 lines = []
 index = -1
 code = void
@@ -16,10 +17,16 @@ for line in data
 	[, lv1, name1, ex1, disam1] = headRegex.exec head
 	lv1 = lv1.length + 1
 	name1 = " " if name1 is \_
+	if disam1
+		disam1 =
+			if disam1.1 is \\
+				\_( + disam1.substring(2) + \)
+			else
+				disam1.substring 1
 	disam1 .= replace " " \_ if disam1
 	ex1 = Boolean ex1
 	if text1
-		if textRegex.test text1
+		if tailRegex.test text1
 			tail = text1
 			text1 = ""
 		if tail
@@ -29,10 +36,15 @@ for line in data
 					[src, captn] = imgg.split " ; "
 					unless src is \?
 						captn = void if captn is \.
-						if imgurIdRegex.test src
-							src = "https://i.imgur.com/#{src}m.png"
-						else if src.0 is \/
+						switch src.0
+						| \/
 							src = "https://upload.wikimedia.org/wikipedia/commons/thumb#src/320px-#{src.substring 6}"
+						| \:
+							[, data, ext] = inaturalistRegex.exec src
+							ext = inaturalistExts[ext]
+							src = "https://static.inaturalist.org/photos/#data/medium.#ext"
+						else
+							src = "https://i.imgur.com/#{src}m.png"
 						{src, captn}
 	node = [lv1, name1, ex1, disam1,, text1, imgs1]
 	if refs.some (.0 >= lv1)
@@ -43,7 +55,7 @@ for line in data
 
 addNode = (node, parentLv, parentName, extinct, chrs, first, last, nextSiblExtinct) !~>
 	[lv, name, ex, disam, childs, text, imgs] = node
-	# if name and name.length is 4 and name isnt /^[? ]$/ and lv < 35
+	# if name and name.length is 5 and name isnt /^[? ]$/ and lv < 35
 	# 	console.log name, node
 	extinct = yes if ex
 	if parentLv >= 0
@@ -57,7 +69,7 @@ addNode = (node, parentLv, parentName, extinct, chrs, first, last, nextSiblExtin
 				.replace /\ (?=[╸━┓])/ \┗	
 				.replace /[┃╏](?=[━┓])/ \┣
 	else
-		chrs2 = "  "
+		chrs2 = " ┃"
 	if lv >= 35
 		fullName = "#parentName #name"
 	line =
@@ -82,6 +94,10 @@ addNode = (node, parentLv, parentName, extinct, chrs, first, last, nextSiblExtin
 
 addNode tree, -1 "" no "" yes yes
 document.body.style.height = lines.length * lineH + \px
+localStorage
+	..taxonFindVal ?= ""
+	..taxonFindExact ?= \1
+	..taxonFindCase ?= \1
 
 App =
 	oninit: !->
@@ -92,8 +108,11 @@ App =
 		@start = void
 		@len = 0
 		@finding = no
+		@findVal = localStorage.taxonFindVal
 		@findLines = []
 		@findIndex = 0
+		@findExact = !!localStorage.taxonFindExact
+		@findCase = !!localStorage.taxonFindCase
 		@popper = null
 		@xhr = null
 		@chrsRanks = [
@@ -113,28 +132,27 @@ App =
 	oncreate: !->
 		document.body.onscroll = !~>
 			@goLine Math.ceil(scrollY / lineH), yes
+			@mouseleaveName!
 		window.onkeydown = (event) !~>
 			unless event.repeat
 				{code} := event
 				switch code
 				| \KeyF
-					if @finding
-						if document.activeElement is document.body
-							findInputEl.focus!
-							event.preventDefault!
-					else
-						@finding = yes
-						setTimeout !~>
-							findInputEl.focus!
-						, 5
+					if document.activeElement is document.body
+						@find!
 						event.preventDefault!
-						m.redraw!
+					if event.ctrlKey
+						event.preventDefault!
+				| \KeyX
+					if event.altKey
+						@toggleFindExact!
+						event.preventDefault!
+				| \KeyC
+					if event.altKey
+						@toggleFindCase!
+						event.preventDefault!
 				| \Escape
-					if @finding
-						@finding = no
-						@findLines = []
-						@findIndex = 0
-						m.redraw!
+					@closeFind!
 		window.onkeyup = (event) !~>
 			code := void
 		do window.onresize = !~>
@@ -142,12 +160,12 @@ App =
 			@goLine!
 
 	goLine: (start = @start, noScroll) !->
-		start ?= +localStorage.taxonomyStart or 0
+		start ?= +localStorage.taxonStart or 0
 		if start < 0
 			start = 0
 		else if start > lines.length - @len + 1
 			start = lines.length - @len + 1
-		localStorage.taxonomyStart = start
+		localStorage.taxonStart = start
 		@lines = lines.slice start, start + @len
 		@start = start
 		scrollTo 0 start * lineH unless noScroll
@@ -156,11 +174,26 @@ App =
 	getRankName: (lv) ->
 		@chrsRanks.find (.2 > lv) .0
 
-	find: (val) !->
-		if val = val.trim!toLowerCase!
+	find: (val = @findVal) !->
+		if val?
+			@findVal = val
+			localStorage.taxonFindVal = val
+		unless @finding
+			@finding = yes
+			m.redraw.sync!
+		findInputEl.focus!
+		if val.trim!
+			unless @findCase
+				val .= toLowerCase!
 			@findLines = lines.filter ~>
-				it.name.toLowerCase!includes val or
-				it.text?toLowerCase!includes val
+				{name, text = ""} = it
+				unless @findCase
+					name .= toLowerCase!
+					text .= toLowerCase!
+				if @findExact
+					name is val or text is val
+				else
+					name.includes val or text.includes val
 			if @findIndex >= @findLines.length
 				@findIndex = @findLines.length - 1
 		else
@@ -173,6 +206,22 @@ App =
 		if @findLines.length
 			@findIndex = (@findIndex + num) %% @findLines.length
 			@goLine @findLines[@findIndex]index - 4
+
+	toggleFindExact: !->
+		not= @findExact
+		localStorage.taxonFindExact = @findExact and \1 or ""
+		@find!
+
+	toggleFindCase: !->
+		not= @findCase
+		localStorage.taxonFindCase = @findCase and \1 or ""
+		@find!
+
+	closeFind: !->
+		if @finding
+			@finding = no
+			@findLines = []
+			m.redraw!
 
 	classLine: (line) ->
 		className = \line
@@ -273,13 +322,17 @@ App =
 									m.redraw.sync!
 									@popper.forceUpdate!
 			try
-				q = (line.fullName or line.name) + (line.disam or "")
+				q =
+					if line.disam?0 is \/
+						line.disam.substring 1 or \_
+					else
+						(line.fullName or line.name) + (line.disam or "")
 				data = await m.request do
 					url: "https://vi.wikipedia.org/api/rest_v1/page/summary/#q"
 					background: yes
 					config: (@xhr) !~>
 				if data.type is \standard and data.extract_html
-					[summary] = data.extract_html is /<p>.+?<\/p>/
+					[summary] = data.extract_html is /<p>.+?<\/p>/s
 				else throw
 				# imgs = [src: data.thumbnail.source] if data.thumbnail and not line.imgs
 			catch
@@ -292,6 +345,7 @@ App =
 			m \#presEl,
 				@lines.map (line) ~>
 					m \div,
+						key: line.index
 						class: @classLine line
 						@chrsRanks.map (rank) ~>
 							m \span,
@@ -320,14 +374,30 @@ App =
 			if @finding
 				m \#findEl,
 					m \input#findInputEl,
+						placeholder: "Tìm kiếm"
 						autocomplete: \off
+						value: @findVal
 						oninput: !~>
 							@find it.target.value
 						onkeydown: !~>
 							if it.key is \Enter
 								@findGo it.shiftKey && -1 || 1
-					m \span#findTextEl,
+					m \#findTextEl,
 						(@findLines.length and @findIndex + 1 or 0) + \/ + @findLines.length
+					m \.findButton,
+						class: \findButtonOn if @findExact
+						title: "Tìm chính xác"
+						onclick: @toggleFindExact
+						'""'
+					m \.findButton,
+						class: \findButtonOn if @findCase
+						title: "Phân biệt hoa-thường"
+						onclick: @toggleFindCase
+						"Tt"
+					m \.findButton#findClose,
+						title: "Đóng"
+						onclick: @closeFind
+						"\u2a09"
 			m \#popupEl
 
 m.mount appEl, App

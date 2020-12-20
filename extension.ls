@@ -407,6 +407,10 @@ App =
 		@comboRanks = []
 		@resetCombo!
 		@els = {}
+		@imgurEditRatio = 0
+		@imgurEditRatioOrg = 0
+		@imgurEditRatio1Img = (320 / 240)toFixed 3
+		@imgurEditRatio2Img = (280 / 240)toFixed 3
 		window.addEventListener \mousedown @onmousedown, yes
 		window.addEventListener \mouseup @onmouseup, yes
 		window.addEventListener \contextmenu @oncontextmenu, yes
@@ -439,8 +443,6 @@ App =
 					nextEl = el.nextElementSibling
 					el.remove!
 				while el = nextEl
-			if @els.infoboxLinkImg
-				@prerender that.href
 			if @els.commons
 				@prerender that.href
 			if @els.viLang
@@ -448,6 +450,20 @@ App =
 				q = that.href.split \/ .[* - 1]
 				@summ = await (await fetch "https://vi.wikipedia.org/api/rest_v1/page/summary/#q")json!
 				m.redraw!
+		| t.imgurEdit
+			widthEl = document.getElementById \width
+			heightEl = document.getElementById \height
+			sizeEl = document.getElementById \crop-dimensions
+			@imgurEditRatio = @imgurEditRatioOrg = +(widthEl.value / heightEl.value)toFixed 3
+			window.addEventListener \mousemove (event) !~>
+				if event.which is 1
+					[, w, h] = /^(\d+)x(\d+)$/exec sizeEl.innerText
+					@imgurEditRatio = +(w / h)toFixed 3
+					m.redraw!
+			for el in [widthEl, heightEl]
+				el.addEventListener \change (event) !~>
+					@imgurEditRatio = @imgurEditRatioOrg = +(widthEl.value / heightEl.value)toFixed 3
+					m.redraw!
 		| t.imgur
 			if location.search is \?state=taxon
 				@token = /access_token=([a-z\d]+)/exec location.hash .1
@@ -607,7 +623,17 @@ App =
 		@selection.removeAllRanges!
 
 	copy: (text) ->
-		navigator.clipboard.writeText text if text
+		if text
+			el = document.createElement \textarea
+			el.className = \_copy
+			el.value = text
+			el.onblur = el.focus.bind el
+			document.body.appendChild el
+			document.activeElement.blur!
+			el.focus!
+			el.select!
+			document.execCommand \copy
+			el.remove!
 
 	openLinksExtract: (targets, noOpen) ->
 		count = 0
@@ -654,7 +680,7 @@ App =
 			[type] = item.types.filter (.startsWith \image/)
 			item.getType type if type
 
-	uploadImgur: (image, type) ->
+	uploadImgur: (image, type, isOpenNewTab) ->
 		if @token and @album
 			{album} = @
 			notify = @notify "Đang upload ảnh Imgur" -1
@@ -662,30 +688,28 @@ App =
 				..append \image image
 				..append \album album
 				..append \type type
-			try
-				res = await fetch \https://api.imgur.com/3/image,
-					method: \post
-					headers:
-						"Authorization": "Bearer #@token"
-					body: formData
-					background: yes
-				if res.ok
-					res = await res.json!
-					if res.success
-						{id, deletehash} = res.data
-						await @copy " # #id"
-						notify.update "Đã upload ảnh Imgur: #id"
-						if type is \URL
-							location.href = "https://imgur.com/edit?deletehash=#deletehash&album_id=#album"
-					else
-						notify.update "Upload ảnh Imgur thất bại"
+			res = await fetch \https://api.imgur.com/3/image,
+				method: \post
+				headers:
+					"Authorization": "Bearer #@token"
+				body: formData
+				background: yes
+			if res.ok
+				res = await res.json!
+				if res.success
+					{id, deletehash} = res.data
+					@copy " # #id"
+					notify.update "Đã upload ảnh Imgur: #id"
+					if type is \URL
+						url = "https://imgur.com/edit?deletehash=#deletehash&album_id=#album&_id=#id"
+						if isOpenNewTab
+							window.open url
+						else
+							location.href = url
 				else
-					notify.update "Không thể upload ảnh Imgur"
-			catch
-				notify.update "Upload ảnh Imgur lỗi: #{e.message}"
-				if type is \URL
-					base64 = await (await fetch "http://localhost:8080/q/img/#image")text!
-					@uploadImgur base64, \base64
+					notify.update "Upload ảnh Imgur thất bại"
+			else
+				notify.update "Không thể upload ảnh Imgur"
 		else
 			@notify "Chưa có token hoặc album"
 
@@ -1001,6 +1025,8 @@ App =
 		else if combo is \0
 			@comboRanks = []
 		switch
+		| combo is \B
+			@copy Date.now!
 		| sel
 			switch
 			| combo is \Slash
@@ -1012,49 +1038,71 @@ App =
 		| target
 			switch
 			| target.localName is \img
-				captions =
-					"RMB": " # %"
-					"Shift+RMB": " | %"
-					"F+RMB": " # % ; fossil"
-					"R+RMB": " # % ; restoration"
-					"C+RMB": " # % ; reconstruction"
-					"E+RMB": " # % ; exhibit"
-					"D+RMB": " # % ; drawing"
-					"H+RMB": " # % ; holotype"
-					"P+RMB": " # % ; paratype"
-					"U+RMB": " # % ; skull"
-					"T+RMB": " # % ; skeleton"
-					"J+RMB": " # % ; jaw"
-					"M+RMB": " # % ; mandible"
-					"L+RMB": " # % ; illustration"
-					"S+RMB": " # % ; specimen"
-					"Period+RMB": " # % ; ."
-					"Semicolon+RMB": " ; % ; "
-					"Q+RMB": " # % | ?"
-					"W+RMB": " # ? | %"
-				if caption = captions[combo]
-					{src} = target
-					if /\/\d+px-.+/.test src
-						src = src
-							.replace /\https:\/\/upload\.wikimedia\.org\/wikipedia\/(commons|en)\/thumb/ ""
-							.replace /\/\d+px-.+$/ ""
-					else if /-\d+px-.+/.test src
-						src .= replace /-\d+px-/ \-220px-
+				unless t.imgurEdit
+					captions =
+						"RMB": " # %"
+						"Shift+RMB": " | %"
+						"F+RMB": " # % ; fossil"
+						"R+RMB": " # % ; restoration"
+						"C+RMB": " # % ; reconstruction"
+						"E+RMB": " # % ; exhibit"
+						"D+RMB": " # % ; drawing"
+						"H+RMB": " # % ; holotype"
+						"P+RMB": " # % ; paratype"
+						"U+RMB": " # % ; skull"
+						"T+RMB": " # % ; skeleton"
+						"J+RMB": " # % ; jaw"
+						"M+RMB": " # % ; mandible"
+						"L+RMB": " # % ; illustration"
+						"S+RMB": " # % ; specimen"
+						"Period+RMB": " # % ; ."
+						"Semicolon+RMB": " ; % ; "
+						"Q+RMB": " # % | ?"
+						"W+RMB": " # ? | %"
+					if caption = captions[combo]
+						{src} = target
+						if /\/\d+px-.+/.test src
+							src = src
+								.replace /\https:\/\/upload\.wikimedia\.org\/wikipedia\/(commons|en)\/thumb/ ""
+								.replace /\/\d+px-.+$/ ""
+						else if /-\d+px-.+/.test src
+							src .= replace /-\d+px-/ \-220px-
+						else
+							src .= replace \https://upload.wikimedia.org/wikipedia/commons ""
+						@data = caption.replace \% src
+						@copy @data
+						@mark target
 					else
-						src .= replace \https://upload.wikimedia.org/wikipedia/commons ""
-					@data = caption.replace \% src
-					@copy @data
-					@mark target
-				else
-					switch combo
-					| \Alt+RMB
-						@copy target.src
-						@mark target
-					| \I+RMB
-						image = target.src
-						@mark target
-						await @uploadImgur image, \URL
-			| target.matches "a:not(.new)[href]"
+						switch combo
+						| \Alt+RMB
+							@copy target.src
+							@mark target
+						| \I+RMB
+							image = target.src
+							@mark target
+							await @uploadImgur image, \URL
+			| t.inaturalist and target.matches "a.photo-container, a.photo"
+				image = getComputedStyle target
+				image = image.backgroundImage
+					.replace /^url\("|"\)$/g ""
+					.replace \/medium. \/large.
+				@mark target
+				switch combo
+				| \RMB
+					matched = /^https:\/\/static\.inaturalist\.org\/photos\/(\d+)\/[a-z]+\.([a-zA-Z]+)/exec image
+					if matched
+						[, data, ext] = matched
+						type = {jpg: "" jpeg: \e png: \p JPG: \J JPEG: \E PNG: \P}[ext]
+						if type?
+							@copy " # :#data#type"
+						else
+							@notify "Định dạng chưa được xác định: #ext"
+					else
+						@copy image
+						@notify "URL hình ảnh không khớp: #image"
+				| \I+RMB
+					await @uploadImgur image, \URL target.classList.contains \photo
+			| target.matches "a:not(.new)[href]" and combo is \RMB
 				if combo is \RMB
 					window.open target.href
 			| td = target.closest ".infobox.biota td:nth-child(2), .infobox.taxobox td:nth-child(2)"
@@ -1111,7 +1159,7 @@ App =
 						ranks: [rank]
 					@copy @data
 					@mark el
-			| target.localName is \p and t.wikispecies
+			| t.wikispecies and target.localName is \p
 				if combo in [\RMB \LMB]
 					text = target.innerText.trim!split /\n+/ .[* - 1]trim!
 					rank = @findRank \prefixes (.startsRegex.test text)
@@ -1122,7 +1170,7 @@ App =
 						ranks: [rank]
 					@copy @data
 					@mark target
-			| td = target.closest \td
+			| t.wiki and td = target.closest \td
 				table = td.closest \table
 				col = @tableCol td
 				switch combo
@@ -1149,7 +1197,10 @@ App =
 			| \D+F
 				(@els.frLang or @els.enLang)?click!
 			| \S
-				(@els.species or @els.enLang)?click!
+				if t.imgurEdit
+					document.getElementById \save .click!
+				else
+					(@els.species or @els.enLang)?click!
 			| \E
 				if @data.includes \*
 					@data -= /\*/g
@@ -1218,15 +1269,16 @@ App =
 	view: ->
 		m.fragment do
 			if t.wikiPage
-				m \._sideLeft._column._px5._py4,
-					m \._col._scroll,
-						m \#_toc._mt6
-					m \._col0._mt3,
-						@comboRanks.map (rank) ~>
-							m \div,
-								style: @style do
-									marginLeft: rank.lv * 4
-								rank.tab + rank.name
+				m \._sideLeft,
+					m \._column._px5._py4,
+						m \._col._scroll,
+							m \#_toc._mt6
+						m \._col0._mt3,
+							@comboRanks.map (rank) ~>
+								m \div,
+									style: @style do
+										marginLeft: rank.lv * 4
+									rank.tab + rank.name
 			m \._sideCenter._col,
 				m \._notifies,
 					@notifies.map (notify) ~>
@@ -1251,27 +1303,40 @@ App =
 									"\u2a09"
 							m \._col._scroll._px4._py3,
 								modal.view modal
-			if t.wikiPage
-				m \._sideRight._column._px5._py4,
-					if @summ
-						if @summ is yes
-							m \._mt5._textCenter "Đang tải..."
-						else
-							m \._scroll,
-								m \h1._summTitle @summ.title
-								m \._summBox._mt5._p3._border,
-									m \img._summImg._block src: @summ.thumbnail?source
-									m \._summExtract._mt3._mb-0._textJustify m.trust @summ.extract_html
-					else
-						m \._mt5._textCenter._textRed "Không có tiếng Việt"
-					m \._row._center._top._mt3,
-						if el = @els.commons
-							m \a._col6._row._center._middle._textGreen,
-								href: el.href
-								m \img._mr2,
-									src: \https://commons.wikimedia.org/static/favicon/commons.ico
-									height: 24
-								"Commons"
+			if t.wikiPage or t.imgurEdit
+				m \._sideRight,
+					switch
+					| t.wikiPage
+						m \._column._px5._py4,
+							if @summ
+								if @summ is yes
+									m \._mt5._textCenter "Đang tải..."
+								else
+									m \._scroll,
+										m \h1._summTitle @summ.title
+										m \._summBox._mt5._p3._border,
+											m \img._summImg._block src: @summ.thumbnail?source
+											m \._summExtract._mt3._mb-0._textJustify m.trust @summ.extract_html
+							else
+								m \._mt5._textCenter._textRed "Không có tiếng Việt"
+							m \._row._center._top._mt3,
+								if el = @els.commons
+									m \a._col6._row._center._middle._textGreen,
+										href: el.href
+										m \img._mr2,
+											src: \https://commons.wikimedia.org/static/favicon/commons.ico
+											height: 24
+										"Commons"
+					| t.imgurEdit
+						m \._p3,
+							m \p "Tỷ lệ h.tại: #@imgurEditRatio"
+							m \p "Tỷ lệ gốc: #@imgurEditRatioOrg"
+							m \p,
+								class: @imgurEditRatio < @imgurEditRatio1Img and \_textRed or \_textGreen
+								"Tỷ lệ 1 ảnh: #@imgurEditRatio1Img"
+							m \p,
+								class: @imgurEditRatio < @imgurEditRatio2Img and \_textRed or \_textGreen
+								"Tỷ lệ 2 ảnh: #@imgurEditRatio2Img"
 
 appEl = document.createElement \div
 appEl.id = \_app

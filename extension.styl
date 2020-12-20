@@ -1,7 +1,10 @@
+$prim = #07d
+$prim1 = #07d1
+$prim2 = #07d2
 body, h1, h2, h3, h4, h5, h6, p
 	font-family "Roboto",sans-serif !important
 body
-	font-size 11pt
+	font-size 10pt
 #_app
 	position fixed
 	left 0
@@ -10,8 +13,9 @@ body
 	height 100%
 	display flex
 	box-sizing border-box
-	z-index 2000
+	color #000
 	pointer-events none
+	z-index 2000
 	*
 		box-sizing border-box
 ._sideLeft
@@ -30,7 +34,7 @@ body
 	border 0
 	border-radius 8px
 	font inherit
-	background #07d
+	background $prim
 	color #fff
 	outline 0
 ._input
@@ -41,7 +45,7 @@ body
 	background #f0f1f2
 	outline 0
 	&:focus
-		box-shadow 0 0 0 2px #07d
+		box-shadow 0 0 0 2px $prim
 		z-index 1
 ._notifies
 	display flex
@@ -92,6 +96,14 @@ body
 	position fixed
 	pointer-events none
 	z-index 2060
+._copy
+	position fixed
+	left -10px
+	width 1px
+	height 1px
+	opacity 0
+._fadeOut95
+	animation _fadeOut95 .1s forwards
 @keyframes _fadeIn5
 	from
 		transform scale(.5)
@@ -113,8 +125,6 @@ body
 	to
 		transform scale(.95)
 		opacity 0
-._fadeOut95
-	animation _fadeOut95 .1s forwards
 ._wiki
 	*
 		box-sizing border-box
@@ -196,12 +206,12 @@ body
 	ul
 		&:hover
 			border-radius 4px
-			background #07d1
-			box-shadow 0 0 0 2px #07d1
+			background $prim1
+			box-shadow 0 0 0 2px $prim1
 		ul
 			&:hover
-				background #07d2
-				box-shadow 0 0 0 2px #07d2
+				background $prim2
+				box-shadow 0 0 0 2px $prim2
 	a[data-opened-a]
 		border-bottom solid 2px currentColor
 		text-decoration none
@@ -219,6 +229,11 @@ body
 		opacity 0
 	.ZGGHx
 		display none
+._imgurEdit
+	._sideRight
+		width 150px
+		border-radius 8px 4px 0 4px
+		align-self flex-end
 
 ._row
 	display flex
@@ -376,5 +391,5 @@ small
 	color #f43
 ._active
 ._hover:hover
-		background #07d
+		background $prim
 		color #fff
