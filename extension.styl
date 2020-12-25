@@ -1,7 +1,7 @@
 $prim = #07d
 $prim1 = #07d1
 $prim2 = #07d2
-body, h1, h2, h3, h4, h5, h6, p
+body, h1, h2, h3, h4, h5, h6, p, a, span
 	font-family "Roboto",sans-serif !important
 body
 	font-size 10pt
@@ -234,6 +234,102 @@ body
 		width 150px
 		border-radius 8px 4px 0 4px
 		align-self flex-end
+._inaturalist
+	*
+		cursor default !important
+	body
+		background #f8f9fa
+	#header
+	#footer
+	#inatnotice
+	#bodywrapper:after
+		display none !important
+	#filters
+		padding 0
+	#taxa-grid
+		margin-top 24px
+	.form-control
+		border 0
+		border-radius 8px
+		box-shadow 0 0 0 1px inset #ccc
+		transition none
+		&:focus
+			box-shadow 0 0 0 2px inset #07d
+	.thumbnail
+	.ac-menu
+		border-radius 8px
+		overflow hidden !important
+	.ac-thumb> img
+	.ac-select-thumb> img
+		border-radius 6px
+	.photo-hover
+		border-radius 8px
+		overflow hidden
+		transition-duration 50ms
+		> .btn
+			opacity 0
+			cursor default
+	.photo
+	.CoverImage
+		background-size contain !important
+		background-repeat no-repeat
+		background-color #ccc
+	.CoverImage
+		border-radius 8px
+._inaturalistSearch
+	#wrapper
+		padding-top 16px
+		> h2
+			display none
+	#q
+	.photo
+	.button
+	.modal_link
+	img[alt=Square]
+	img[alt$=" s"]
+		border-radius 8px
+	#q
+		outline 0
+	.modal_link
+		border solid 1px #ccc !important
+	.modal-dialog
+		transform none !important
+		transition none
+		animation _fadeIn5 .1s forwards
+	.modal-backdrop
+		background #8886 !important
+	.modal-content
+		border-radius 16px !important
+	.photo-modal-content
+		border-radius 16px
+		overflow hidden
+	.ui-dialog
+		position fixed
+		top 5%
+		width fit-content !important
+		border-radius 8px
+		> .ui-dialog-content
+			height 100% !important
+			max-height 90% !important
+		.photo
+			border-radius 8px
+	.taxon_list_taxon
+		margin-bottom 0 !important
+		> a.right
+			margin-top 6px
+		> h3
+			margin 0
+		.taxon
+			margin-top 8px
+			font-size 11pt
+			color #e26
+			> span
+				font-weight 400
+				font-style normal
+		.species
+			font-size 10pt
+	#iconic_taxa_facet
+		display none
 
 ._row
 	display flex

@@ -2,13 +2,10 @@ body
 	margin 0
 	font-family "Roboto",sans-serif
 	font-size 13px
-	overflow hidden
 	user-select none
 	cursor default
 ::-webkit-scrollbar
 	-webkit-appearance none
-	width 16px
-	height 16px
 	background #333436
 ::-webkit-scrollbar-thumb
 	background #434446
@@ -65,40 +62,29 @@ body
 .subspecies
 	font-weight normal
 	color #ced9e0
-#scrollEl
-	position absolute
-	left 0
-	top 0
-	width 100%
-	height 100%
-	overflow-x hidden
-	overflow-y auto
-#heightEl
-	width 1px
-	display inline-block
-	pointer-events none
 #presEl
-	position absolute
+	position fixed
 	left 0
 	top 0
 	width 100%
 	height 100%
 	margin 0
 	white-space pre
+	cursor default
 #infosEl
-	position absolute
-	right 16px
+	position fixed
+	right 0
 	bottom 0
 	padding 16px
 	border-radius 8px 4px 4px 4px
 	display grid
 	grid-template-columns repeat(2,auto)
-	grid-gap 4px 16px
+	grid-gap 4px 8px
 	background #fff
 #findEl
-	position absolute
+	position fixed
 	top 0
-	right 16px
+	right 0
 	width 300px
 	padding 6px
 	border-radius 4px 4px 4px 8px
@@ -211,3 +197,8 @@ body
 	> p
 		margin 0
 		text-align justify
+	ul
+		margin 0
+		padding 0
+		list-style-type none
+		text-align left

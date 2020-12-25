@@ -1,7 +1,3 @@
-localStorage
-	..taxonFindExact ?= \1
-	..taxonFindCase ?= \1
-	..taxonInfoLv ?= 1
 lineH = 15
 data = await (await fetch \tree.taxon)text!
 data /= \\n
@@ -13,38 +9,17 @@ inaturalistRegex = /^:(\d+)([epJEPu]?)$/
 inaturalistExts = "": \jpg e: \jpeg p: \png J: \JPG E: \JPEG P: \PNG u: ""
 lines = []
 index = -1
-chars = {}
-charsId = 0
 code = void
-numFmt = new Intl.NumberFormat \en
-infoMaxLv = 2
-infoLv = +localStorage.taxonInfoLv
 infos =
-	taxon:
-		label: "Tổng số taxon"
-		lv: 1
-	family:
-		label: "Tổng số họ"
-	genus:
-		label: "Tổng số chi"
-	speciesSubsp:
-		label: "Tổng số loài, phân loài"
-		lv: 1
-	speciesSubspExists:
-		label: "Loài, phân loài còn tồn tại"
-	speciesSubspExtinct:
-		label: "Loài, phân loài tuyệt chủng"
-	speciesSubspHasViName:
-		label: "Loài, phân loài có tên tiếng Việt"
-	speciesSubspHasImg:
-		label: "Loài, phân loài có hình ảnh"
-		lv: 1
+	species:
+		label: "Tổng số loài"
+		count: 0
+	speciesHasImg:
+		label: "Số loài có hình ảnh"
+		count: 0
 	img:
 		label: "Tổng số hình ảnh"
-		lv: 1
-for , info of infos
-	info.lv ?= infoMaxLv
-	info.count = 0
+		count: 0
 
 for line in data
 	imgs1 = void
@@ -108,56 +83,42 @@ addNode = (node, parentLv, parentName, extinct, chrs, first, last, nextSiblExtin
 				.replace /[┃╏](?=[━┓])/ \┣
 	else
 		chrs2 = " ┃"
-	if chars[chrs2]?
-		chrs2 = chars[chrs2]
-	else
-		chrs2 = chars[chrs2] = charsId++
-	lteSpecies = lv > 34
-	if lteSpecies
+	if lv >= 35
 		fullName = "#parentName #name"
-		unless childs
-			infos.speciesSubsp.count++
-			infos.speciesSubspHasImg.count++ if imgs
-			infos.speciesSubspHasViName.count++ if text
-			infos.speciesSubspExtinct.count++ if extinct
-	else if lv is 30
-		infos.genus.count++
-	else if lv is 25
-		infos.family.count++
 	line =
 		index: ++index
 		lv: lv
 		name: name
+		text: text
+		imgs: imgs
+		extinct: extinct
+		disam: disam
 		chrs: chrs2
-	line.text? = text
-	line.imgs? = imgs
-	line.extinct? = extinct
-	line.disam? = disam
-	line.fullName? = fullName
+		fullName: fullName
 	lines.push line
 	if childs
 		line.childs = []
 		chrs += "  "repeat(lvRange) + (last and "  " or (if extinct or nextSiblExtinct => " ╏" else " ┃"))
-		if lv < 31 or lteSpecies
-			if name not in [\? " "]
-				parentName = fullName or name
-			else if lv is 30
-				parentName = \" + parentName + \"
+		if (lv < 31 or lv > 34) and name not in [\? " "]
+			parentName = fullName or name
 		lastIndex = childs.length - 1
 		for child, i in childs
 			addNode child, lv, parentName, extinct, chrs, not i, i is lastIndex, childs[i + 1]?2
+	else
+		infos.species.count++
+		infos.speciesHasImg.count++ if imgs
 
 addNode tree, -1 "" no "" yes yes
-chars = Object.keys chars
-infos.taxon.count = lines.length
-infos.speciesSubspExists.count = infos.speciesSubsp.count - infos.speciesSubspExtinct.count
-for , info of infos
-	info.count = numFmt.format info.count
+document.body.style.height = lines.length * lineH + \px
+localStorage
+	..taxonFindExact ?= \1
+	..taxonFindCase ?= \1
 
 App =
 	oninit: !->
 		for k, prop of @
 			@[k] = prop.bind @ if typeof prop is \function
+		@lines = []
 		@lines = []
 		@start = void
 		@len = 0
@@ -169,7 +130,7 @@ App =
 		@findCase = !!localStorage.taxonFindCase
 		@popper = null
 		@xhr = null
-		@chrsRanks =
+		@chrsRanks = [
 			[\life 0 1]
 			[\domain 1 2]
 			[\kingdom 2 5]
@@ -181,8 +142,12 @@ App =
 			[\genus 30 34]
 			[\species 34 36]
 			[\subspecies 36 39]
+		]
 
 	oncreate: !->
+		document.body.onscroll = !~>
+			@goLine Math.ceil(scrollY / lineH), yes
+			@mouseleaveName!
 		window.onkeydown = (event) !~>
 			unless event.repeat
 				{code} := event
@@ -194,20 +159,13 @@ App =
 					if event.ctrlKey
 						event.preventDefault!
 				| \KeyX
-					if @finding
-						if event.altKey
-							@toggleFindExact!
-							event.preventDefault!
+					if event.altKey
+						@toggleFindExact!
+						event.preventDefault!
 				| \KeyC
-					if @finding
-						if event.altKey
-							@toggleFindCase!
-							event.preventDefault!
-				| \KeyI
-					val = event.shiftKey and 2 or 1
-					infoLv := if infoLv and infoLv is val => 0 else val
-					localStorage.taxonInfoLv = infoLv
-					m.redraw!
+					if event.altKey
+						@toggleFindCase!
+						event.preventDefault!
 				| \Escape
 					@closeFind!
 		window.onkeyup = (event) !~>
@@ -225,9 +183,7 @@ App =
 		localStorage.taxonStart = start
 		@lines = lines.slice start, start + @len
 		@start = start
-		unless noScroll
-			scrollEl.scrollTop = start * lineH
-		presEl.style.transform = "translateY(#{scrollEl.scrollTop}px)"
+		scrollTo 0 start * lineH unless noScroll
 		m.redraw!
 
 	getRankName: (lv) ->
@@ -398,7 +354,7 @@ App =
 					background: yes
 					config: (@xhr) !~>
 				if data.type is \standard and data.extract_html
-					[summary] = /<p>.+?<\/p>/exec data.extract_html
+					summary = data.extract_html
 				else throw
 				# imgs = [src: data.thumbnail.source] if data.thumbnail and not line.imgs
 			catch
@@ -406,53 +362,42 @@ App =
 			m.redraw.sync!
 			@popper.forceUpdate!
 
-	onscrollScroll: !->
-		@goLine Math.ceil(scrollEl.scrollTop / lineH), yes
-		@mouseleaveName!
-
 	view: ->
 		m \div,
-			m \#scrollEl,
-				onscroll: @onscrollScroll
-				m \#presEl,
-					@lines.map (line) ~>
-						m \div,
-							key: line.index
-							class: @classLine line
-							@chrsRanks.map (rank) ~>
-								m \span,
-									class: rank.0
-									chars[line.chrs]substring rank.1 * 2, rank.2 * 2
-							m \.node,
-								m \span,
-									class: @getRankName line.lv
-									onmouseenter: !~>
-										@mouseenterName line, it
-									onmouseleave: @mouseleaveName
-									onmousedown: !~>
-										@mousedownName line, it
-									oncontextmenu: !~>
-										@contextmenuName line, it
-									line.name
-								if line.text
-									m \span.text,
-										"\u2014 #{line.text}"
-								line.imgs?map (img) ~>
-									if img
-										m \img.img,
-											src: img.src
-											onmousedown: !~>
-												@mousedownImg img, it
-				m \#heightEl,
-					style:
-						height: lines.length * lineH + \px
-			if infoLv
-				m \#infosEl,
-					for , info of infos
-						if infoLv >= info.lv
-							m.fragment do
-								m \.info info.label
-								m \.info info.count
+			m \#presEl,
+				@lines.map (line) ~>
+					m \div,
+						key: line.index
+						class: @classLine line
+						@chrsRanks.map (rank) ~>
+							m \span,
+								class: rank.0
+								line.chrs.substring rank.1 * 2, rank.2 * 2
+						m \.node,
+							m \span,
+								class: @getRankName line.lv
+								onmouseenter: !~>
+									@mouseenterName line, it
+								onmouseleave: @mouseleaveName
+								onmousedown: !~>
+									@mousedownName line, it
+								oncontextmenu: !~>
+									@contextmenuName line, it
+								line.name
+							if line.text
+								m \span.text,
+									"\u2014 #{line.text}"
+							line.imgs?map (img) ~>
+								if img
+									m \img.img,
+										src: img.src
+										onmousedown: !~>
+											@mousedownImg img, it
+			m \#infosEl,
+				for k, info of infos
+					m.fragment do
+						m \.info info.label
+						m \.info info.count
 			if @finding
 				m \#findEl,
 					m \input#findInputEl,

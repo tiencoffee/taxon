@@ -471,6 +471,10 @@ App =
 					token: @token
 					tokenTime: Date.now!
 					@closeTab
+		| t.inaturalistSearch
+			els = document.querySelectorAll ".taxon_list_taxon> .noimg"
+			for el in els
+				el.remove!
 
 	oncreate: !->
 		if t.wiki
@@ -624,16 +628,18 @@ App =
 
 	copy: (text) ->
 		if text
-			el = document.createElement \textarea
-			el.className = \_copy
-			el.value = text
-			el.onblur = el.focus.bind el
-			document.body.appendChild el
-			document.activeElement.blur!
-			el.focus!
-			el.select!
-			document.execCommand \copy
-			el.remove!
+			if navigator.clipboard
+				that.writeText text
+			else
+				el = document.createElement \textarea
+				el.className = \_copy
+				el.value = text
+				el.onblur = el.focus.bind el
+				document.body.appendChild el
+				document.activeElement.blur!
+				el.select!
+				document.execCommand \copy
+				el.remove!
 
 	openLinksExtract: (targets, noOpen) ->
 		count = 0
@@ -1024,19 +1030,42 @@ App =
 			@comboRanks.push rank
 		else if combo is \0
 			@comboRanks = []
-		switch
-		| combo is \B
-			@copy Date.now!
-		| sel
+		if target
 			switch
-			| combo is \Slash
+			| combo is \Backquote+RMB
+				@isContextMenu = yes
+			| sel and combo in [\RMB \Slash]
 				@data = sel.replace @regexes.startsPrefixes, ""
 				@data = @upperFirst @data
 				@data = " # #@data"
 				@copy @data
 				@emptySel!
-		| target
-			switch
+			| t.inaturalist and target.matches "a.photo-container, a.photo, img"
+				unless image = target.src
+					image = getComputedStyle target
+						.backgroundImage
+						.replace /^url\("|"\)$/g ""
+				image .= replace \/medium. \/large.
+				switch combo
+				| \RMB
+					@mark target
+					switch
+					| matched = /^https:\/\/static\.inaturalist\.org\/photos\/(\d+)\/[a-z]+\.([a-zA-Z]*)/exec image
+						[, data, ext] = matched
+						type = {jpg: "" jpeg: \e png: \p JPG: \J JPEG: \E PNG: \P "": \u}[ext]
+						if type?
+							@copy " # :#data#type"
+						else
+							@notify "Định dạng chưa được xác định: #ext"
+					| matched = /^https:\/\/live\.staticflickr\.com\/(\d+\/\d+_[\da-f]+)_[a-z]\.jpg+/exec image
+						data = matched.1
+						@copy " # @#data"
+					else
+						@copy image
+						@notify "URL hình ảnh không xác định: #image"
+				| \I+RMB
+					@mark target
+					await @uploadImgur image, \URL target.classList.contains \photo
 			| target.localName is \img
 				unless t.imgurEdit
 					captions =
@@ -1081,27 +1110,6 @@ App =
 							image = target.src
 							@mark target
 							await @uploadImgur image, \URL
-			| t.inaturalist and target.matches "a.photo-container, a.photo"
-				image = getComputedStyle target
-				image = image.backgroundImage
-					.replace /^url\("|"\)$/g ""
-					.replace \/medium. \/large.
-				@mark target
-				switch combo
-				| \RMB
-					matched = /^https:\/\/static\.inaturalist\.org\/photos\/(\d+)\/[a-z]+\.([a-zA-Z]+)/exec image
-					if matched
-						[, data, ext] = matched
-						type = {jpg: "" jpeg: \e png: \p JPG: \J JPEG: \E PNG: \P}[ext]
-						if type?
-							@copy " # :#data#type"
-						else
-							@notify "Định dạng chưa được xác định: #ext"
-					else
-						@copy image
-						@notify "URL hình ảnh không khớp: #image"
-				| \I+RMB
-					await @uploadImgur image, \URL target.classList.contains \photo
 			| target.matches "a:not(.new)[href]" and combo is \RMB
 				if combo is \RMB
 					window.open target.href
@@ -1189,7 +1197,10 @@ App =
 			| \C
 				(@els.commons or @els.enLang)?click!
 			| \D
-				(@els.enLang or @els.viLang)?click!
+				if t.inaturalist
+					document.querySelector \.next_page ?.click!
+				else
+					(@els.enLang or @els.viLang)?click!
 			| \D+V
 				(@els.viLang or @els.enLang)?click!
 			| \D+E
@@ -1207,6 +1218,12 @@ App =
 				else
 					@data .= replace /(?!^)(?=\n|$)/g \*
 				@copy @data
+			| \V
+				if t.inaturalist
+					if el = document.querySelector "[name=taxon_name]"
+						text = await navigator.clipboard.readText!
+						el.select!
+						el.value = text
 			| \O \Shift+O
 				text = await navigator.clipboard.readText!
 				url = "https://en.wikipedia.org/wiki/#text"
@@ -1255,15 +1272,18 @@ App =
 				location.href = document.querySelector '#ca-history a' .href
 			| \W+M
 				location.href = document.querySelector '#ca-move a' .href
-		switch combo
-		| \Backquote+RMB
-			@isContextMenu = yes
-		| \Z
-			history.back!
-		| \X
-			history.forward!
-		| \W
-			@closeTab!
+			| \ArrowLeft
+				if el = document.querySelector \.nav-button
+					el.click!
+			| \ArrowRight
+				if el = document.querySelector \.nav-button.next
+					el.click!
+			| \Z
+				history.back!
+			| \X
+				history.forward!
+			| \W
+				@closeTab!
 		m.redraw!
 
 	view: ->

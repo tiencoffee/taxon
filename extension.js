@@ -12,6 +12,7 @@
 	t.wikiPage = t.wikipedia || t.wikicommons || t.wikispecies
 	t.wiki = t.wikiPage || t.wikiImg
 	t.imgurEdit = t.imgur && pathname == "/edit"
+	t.inaturalistSearch = t.inaturalist && pathname == "/taxa/search"
 	let [styl, code] = await Promise.all([
 		(await fetch(chrome.runtime.getURL("extension.styl"))).text(),
 		(await fetch(chrome.runtime.getURL("extension.ls"))).text()
