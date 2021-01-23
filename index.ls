@@ -8,9 +8,11 @@ data /= \\n
 tree = [0 \Organism no \/Sinh_vật [] "Sinh vật"]
 refs = [tree]
 headRegex = /^(\t*)(.+?)(\*)?( .+)?$/
-tailRegex = /^(\/|\?|:|@|https?:\/\/|[a-zA-Z\d]{7}( [;|]|$))/
+tailRegex = /^([/:@%~?]|https?:\/\/|[a-zA-Z\d]{7}( [;|]|$))/
 inaturalistRegex = /^:(\d+)([epJEPu]?)$/
 inaturalistExts = "": \jpg e: \jpeg p: \png J: \JPG E: \JPEG P: \PNG u: ""
+bugguideRegex = /^~([A-Z\d]+)([r]?)$/
+bugguideTypes = "": \cache r: \raw
 lines = []
 index = -1
 chars = {}
@@ -73,15 +75,23 @@ for line in data
 						captn = void if captn is \.
 						switch src.0
 						| \/
-							src = "https://upload.wikimedia.org/wikipedia/commons/thumb#src/320px-#{src.substring 6}"
+							src = src.1 + src
+							src = "https://upload.wikimedia.org/wikipedia/commons/thumb/#src/320px-#{src.substring 5}"
 						| \:
 							[, src, ext] = inaturalistRegex.exec src
 							ext = inaturalistExts[ext]
 							src = "https://static.inaturalist.org/photos/#src/medium.#ext"
 						| \@
 							src = "https://live.staticflickr.com/#{src.substring 1}_n.jpg"
+						| \%
+							src = "https://www.biolib.cz/IMG/GAL/#{src.substring 1}.jpg"
+						| \~
+							[, src, type] = bugguideRegex.exec src
+							type = bugguideTypes[type]
+							src = "https://bugguide.net/images/#type/#{src.substring 0 3}/#{src.substring 3 6}/#src.jpg"
 						else
-							src = "https://i.imgur.com/#{src}m.png"
+							unless /^https?:\/\//test src
+								src = "https://i.imgur.com/#{src}m.png"
 						infos.img.count++
 						{src, captn}
 	node = [lv1, name1, ex1, disam1,, text1, imgs1]
@@ -298,7 +308,9 @@ App =
 				src .= replace \/medium. \/large.
 			| src.includes \live.staticflickr.com
 				src .= replace \_n. \.
-			else
+			| src.includes \biolib.cz
+				src .= replace \/GAL/ \/GAL/BIG/
+			| src.includes \i.imgur.com
 				src .= replace /(?<=:\/\/)i\.|m\.png$/g ""
 			window.open src, \_blank
 
@@ -318,10 +330,15 @@ App =
 		unless line.name in ["" \?]
 			name = line.fullName or line.name
 			if event.altKey
+				window.open "https://bugguide.net/index.php?q=search&keys=#name"
+			else if code is \KeyB
+				window.open "https://biolib.cz/en/formsearch/?string=#name&searchgallery=1&action=execute"
+			else if code is \KeyG
 				window.open "https://google.com/search?tbm=isch&q=#name" \_blank
 			else
-				await navigator.clipboard.writeText line.name
-				window.open "https://inaturalist.ca/taxa/search?everywhere=true&view=list&q=#name"
+				text = name.split " " .0
+				await navigator.clipboard.writeText text
+				window.open "https://inaturalist.org/taxa/search?view=list&q=#name"
 
 	mouseleaveName: !->
 		if @popper

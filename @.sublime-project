@@ -6,10 +6,9 @@
 	}],
 	"settings": {
 		// "font_face": "Roboto",
-		// "font_size": 11,
+		// "font_size": 10,
 		// "tab_size": 4,
-		// "wrap_width": 56
-		"wrap_width": 100
+		"wrap_width": 70
 	},
 	"build_systems": [{
 		"name": "Build",

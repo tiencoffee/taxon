@@ -7,7 +7,10 @@
 		wikiImg: /upload\.wikimedia\.org/.test(host),
 		google: /google\.com/.test(host),
 		imgur: /imgur\.com/.test(host),
-		inaturalist: /inaturalist\.ca/.test(host)
+		inaturalist: /inaturalist\.(org|ca)/.test(host),
+		biolib: /biolib\.cz/.test(host),
+		bugguide: /bugguide\.net/.test(host),
+		fishbase: /bugguide\.net/.test(host)
 	}
 	t.wikiPage = t.wikipedia || t.wikicommons || t.wikispecies
 	t.wiki = t.wikiPage || t.wikiImg

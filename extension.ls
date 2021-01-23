@@ -475,6 +475,10 @@ App =
 			els = document.querySelectorAll ".taxon_list_taxon> .noimg"
 			for el in els
 				el.remove!
+		| t.biolib
+			setTimeout !~>
+				document.activeElement.blur!
+			, 10
 
 	oncreate: !->
 		if t.wiki
@@ -939,6 +943,7 @@ App =
 			text = text
 				.replace @regexes.startsPrefixes, ""
 				.replace /["'?()]/g ""
+				.replace /\=.+$/ ""
 			if /\ cf\. |(?<!sub)sp\. | sp\. (?![a-z])/ is text
 				continue
 			tab = void
@@ -1040,37 +1045,12 @@ App =
 				@data = " # #@data"
 				@copy @data
 				@emptySel!
-			| t.inaturalist and target.matches "a.photo-container, a.photo, img"
-				unless image = target.src
-					image = getComputedStyle target
-						.backgroundImage
-						.replace /^url\("|"\)$/g ""
-				image .= replace \/medium. \/large.
-				switch combo
-				| \RMB
-					@mark target
-					switch
-					| matched = /^https:\/\/static\.inaturalist\.org\/photos\/(\d+)\/[a-z]+\.([a-zA-Z]*)/exec image
-						[, data, ext] = matched
-						type = {jpg: "" jpeg: \e png: \p JPG: \J JPEG: \E PNG: \P "": \u}[ext]
-						if type?
-							@copy " # :#data#type"
-						else
-							@notify "Định dạng chưa được xác định: #ext"
-					| matched = /^https:\/\/live\.staticflickr\.com\/(\d+\/\d+_[\da-f]+)_[a-z]\.jpg+/exec image
-						data = matched.1
-						@copy " # @#data"
-					else
-						@copy image
-						@notify "URL hình ảnh không xác định: #image"
-				| \I+RMB
-					@mark target
-					await @uploadImgur image, \URL target.classList.contains \photo
-			| target.localName is \img
+			| target.localName is \img or (t.inaturalist and target.matches "a.photo-container, a.photo")
 				unless t.imgurEdit
 					captions =
 						"RMB": " # %"
 						"Shift+RMB": " | %"
+						"Alt+RMB": " ; % ; "
 						"F+RMB": " # % ; fossil"
 						"R+RMB": " # % ; restoration"
 						"C+RMB": " # % ; reconstruction"
@@ -1084,20 +1064,38 @@ App =
 						"M+RMB": " # % ; mandible"
 						"L+RMB": " # % ; illustration"
 						"S+RMB": " # % ; specimen"
-						"Period+RMB": " # % ; ."
-						"Semicolon+RMB": " ; % ; "
 						"Q+RMB": " # % | ?"
 						"W+RMB": " # ? | %"
 					if caption = captions[combo]
 						{src} = target
-						if /\/\d+px-.+/.test src
-							src = src
-								.replace /\https:\/\/upload\.wikimedia\.org\/wikipedia\/(commons|en)\/thumb/ ""
-								.replace /\/\d+px-.+$/ ""
-						else if /-\d+px-.+/.test src
-							src .= replace /-\d+px-/ \-220px-
-						else
-							src .= replace \https://upload.wikimedia.org/wikipedia/commons ""
+						if src.includes \//upload.wikimedia.org/
+							src = match src
+								| /\/\d+px-.+/
+									src
+										.replace /\https:\/\/upload\.wikimedia\.org\/wikipedia\/(commons|en)\/thumb\/./ ""
+										.replace /\/\d+px-.+$/ ""
+								| /-\d+px-.+/
+									src.replace /-\d+px-/ \-220px-
+								else
+									src.replace /https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\/./ ""
+							# src .= replace /%([A-Fa-f\d]{2})/g (s, s1) ~> String.fromCharCode parseInt s1, 16
+						else if src.includes \//static.inaturalist.org/
+							[, data, ext] = /^https:\/\/static\.inaturalist\.org\/photos\/(\d+)\/[a-z]+\.([a-zA-Z]*)/exec src
+							type = {jpg: "" jpeg: \e png: \p JPG: \J JPEG: \E PNG: \P "": \u}[ext]
+							src = ":#data#type"
+						else if src.includes \//live.staticflickr.com/
+							data = /^https:\/\/live\.staticflickr\.com\/(\d+\/\d+_[\da-f]+)_[a-z]\.jpg+/exec src .1
+							src = "@#data"
+						else if src.includes \//www.biolib.cz/
+							data = /(\d+)\.jpg$/exec src .1
+							src = "%#data"
+						else if src.includes \//bugguide.net/
+							data = /([A-Z\d]+)\.jpg$/exec src .1
+							if src.includes \/raw/
+								data += \r
+							src = "~#data"
+						else if src.includes \//i.imgur.com/
+							src = /https:\/\/i\.imgur\.com\/([A-Za-z\d]{7})/exec src .1
 						@data = caption.replace \% src
 						@copy @data
 						@mark target
@@ -1108,8 +1106,9 @@ App =
 							@mark target
 						| \I+RMB
 							image = target.src
+							isOpenNewTab = t.inaturalist and target.classList.contains \photo
 							@mark target
-							await @uploadImgur image, \URL
+							await @uploadImgur image, \URL isOpenNewTab
 			| target.matches "a:not(.new)[href]" and combo is \RMB
 				if combo is \RMB
 					window.open target.href
@@ -1144,6 +1143,12 @@ App =
 					@mark ul
 				| \Alt+RMB \Shift+Alt+RMB \Alt+LMB \Shift+Alt+LMB
 					@openLinksExtract ul.children, combo in [\Shift+Alt+RMB \Shift+Alt+LMB]
+			| target.closest \.CategoryTreeItem
+				wrapper = target.closest \#mw-subcategories
+				switch combo
+				| \Alt+RMB \Shift+Alt+RMB \Alt+LMB \Shift+Alt+LMB
+					links = wrapper.querySelectorAll \.CategoryTreeItem
+					@openLinksExtract links, combo in [\Shift+Alt+RMB \Shift+Alt+LMB]
 			| el = target.closest "
 			.infobox.biota p, .infobox.biota td:only-child,
 			.infobox.taxobox p, .infobox.taxobox td:only-child"
