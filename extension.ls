@@ -942,8 +942,11 @@ App =
 			text ?= targetText
 			text = text
 				.replace @regexes.startsPrefixes, ""
-				.replace /["'?()]/g ""
-				.replace /\=.+$/ ""
+				.replace /["'?]|=.+$/g ""
+				.replace /^([A-Z][a-z]+) \([A-Z][a-z]+\)( [a-z]{2,})$/ \$1$2
+				.replace /[()]/g ""
+			if text is /^[A-Z][a-z]+ \(([A-Z][a-z]+)\) [a-z]{2,}$/
+				subgenera[that.1] = yes
 			if /\ cf\. |(?<!sub)sp\. | sp\. (?![a-z])/ is text
 				continue
 			tab = void
@@ -1129,6 +1132,11 @@ App =
 						ranks: [@ranks.species]
 					@copy @data
 					@mark el
+			| el = target.closest "dl> dt:only-child"
+				if combo in [\RMB \LMB]
+					@data = @extract el
+					@copy @data
+					@mark el
 			| target is target.closest ".infobox.biota, .infobox.taxobox" ?.querySelector \th
 				if combo in [\RMB \LMB]
 					@mark target
@@ -1243,6 +1251,10 @@ App =
 					location.href = url
 				else
 					window.open url
+			| \G+I
+				q = firstHeading.innerText - \Category:
+				url = "https://inaturalist.org/taxa/search?view=list&q=#q"
+				location.href = url
 			| \I+U
 				if blob = await @readCopiedImgBlob!
 					base64 = await @readAsBase64 blob
