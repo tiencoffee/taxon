@@ -2,13 +2,14 @@ localStorage
 	..taxonFindExact ?= \1
 	..taxonFindCase ?= \1
 	..taxonInfoLv ?= 1
+	..rightClickAction ?= \n
 lineH = 15
 data = await (await fetch \tree.taxon)text!
 data /= \\n
 tree = [0 \Organism no \/Sinh_vật [] "Sinh vật"]
 refs = [tree]
 headRegex = /^(\t*)(.+?)(\*)?( .+)?$/
-tailRegex = /^([/:@%~?]|https?:\/\/|[a-zA-Z\d]{7}( [;|]|$))/
+tailRegex = /^([/:@%~^+?]|https?:\/\/|[a-zA-Z\d]{7}( [;|]|$))/
 inaturalistRegex = /^:(\d+)([epJEPu]?)$/
 inaturalistExts = "": \jpg e: \jpeg p: \png J: \JPG E: \JPEG P: \PNG u: ""
 bugguideRegex = /^~([A-Z\d]+)([r]?)$/
@@ -84,11 +85,17 @@ for line in data
 						| \@
 							src = "https://live.staticflickr.com/#{src.substring 1}_n.jpg"
 						| \%
-							src = "https://www.biolib.cz/IMG/GAL/#{src.substring 1}.jpg"
+							src = "https://biolib.cz/IMG/GAL/#{src.substring 1}.jpg"
 						| \~
 							[, src, type] = bugguideRegex.exec src
 							type = bugguideTypes[type]
 							src = "https://bugguide.net/images/#type/#{src.substring 0 3}/#{src.substring 3 6}/#src.jpg"
+						| \^
+							src =
+								if src.1 is \^ => "https://fishbase.se/tools/UploadPhoto/uploads/#{src.substring 2}.jpg"
+								else "https://fishbase.se/images/species/#{src.substring 1}.jpg"
+						| \+
+							src = "https://cdn.download.ams.birds.cornell.edu/api/v1/asset/#{src.substring 1}1/320"
 						else
 							unless /^https?:\/\//test src
 								src = "https://i.imgur.com/#{src}m.png"
@@ -191,6 +198,7 @@ App =
 			[\genus 30 34]
 			[\species 34 36]
 			[\subspecies 36 39]
+		@rightClickAction = localStorage.taxonRightClickAction
 
 	oncreate: !->
 		window.onkeydown = (event) !~>
@@ -214,13 +222,29 @@ App =
 							@toggleFindCase!
 							event.preventDefault!
 				| \KeyI
-					val = event.shiftKey and 2 or 1
-					infoLv := if infoLv and infoLv is val => 0 else val
-					localStorage.taxonInfoLv = infoLv
-					m.redraw!
+					if document.activeElement is document.body
+						val = event.shiftKey and 2 or 1
+						infoLv := if infoLv and infoLv is val => 0 else val
+						localStorage.taxonInfoLv = infoLv
+						m.redraw!
+				| \KeyA
+					if document.activeElement is document.body
+						action = prompt """
+							Nhập hành động khi bấm chuột phải:
+							g: google
+							b: bugguide
+							l: biolib
+							h: fishbase
+							e: ebird
+							n: inaturalist (mặc định)
+						""" \n
+						if action
+							@rightClickAction = action
+							localStorage.taxonRightClickAction = action
 				| \Escape
-					@closeFind!
-		window.onkeyup = (event) !~>
+					if @finding
+						@closeFind!
+		window.onkeyup = window.onblur = (event) !~>
 			code := void
 		do window.onresize = !~>
 			@len = Math.ceil innerHeight / lineH
@@ -310,8 +334,11 @@ App =
 				src .= replace \_n. \.
 			| src.includes \biolib.cz
 				src .= replace \/GAL/ \/GAL/BIG/
+			| src.includes \cdn.download.ams.birds.cornell.edu
+				src .= replace /\d+$/ \1800
 			| src.includes \i.imgur.com
-				src .= replace /(?<=:\/\/)i\.|m\.png$/g ""
+				src -= /(?<=:\/\/)i\.|m\.png$/g
+				src += \?_taxonDelete=1 if code is \Delete
 			window.open src, \_blank
 
 	mousedownName: (line, event) !->
@@ -329,12 +356,28 @@ App =
 		event.preventDefault!
 		unless line.name in ["" \?]
 			name = line.fullName or line.name
-			if event.altKey
-				window.open "https://bugguide.net/index.php?q=search&keys=#name"
-			else if code is \KeyB
-				window.open "https://biolib.cz/en/formsearch/?string=#name&searchgallery=1&action=execute"
-			else if code is \KeyG
+			action =
+				| event.altKey => \g
+				| code is \KeyB => \b
+				| code is \KeyL => \l
+				| code is \KeyH => \h
+				| code is \KeyE => \e
+				| code is \KeyN => \n
+				else @rightClickAction
+			switch action
+			| \g
 				window.open "https://google.com/search?tbm=isch&q=#name" \_blank
+			| \b
+				window.open "https://bugguide.net/index.php?q=search&keys=#name"
+			| \l
+				window.open "https://biolib.cz/en/formsearch/?string=#name&searchgallery=1&action=execute"
+			| \h
+				[genus, species] = name.split " "
+				window.open "https://fishbase.se/photos/ThumbnailsSummary.php?Genus=#genus&Species=#species" \_blank
+			| \e
+				data = await (await fetch "https://api.ebird.org/v2/ref/taxon/find?key=jfekjedvescr&q=#name")json!
+				item = data.find (.name.includes name) or data.0
+				window.open "https://ebird.org/species/#{item.code}" if item
 			else
 				text = name.split " " .0
 				await navigator.clipboard.writeText text
@@ -415,7 +458,8 @@ App =
 					background: yes
 					config: (@xhr) !~>
 				if data.type is \standard and data.extract_html
-					[summary] = /<p>.+?<\/p>/exec data.extract_html
+					summary = data.extract_html.replace /\n+/g " "
+					summary = /<p>.+?<\/p>/uexec summary .0
 				else throw
 				# imgs = [src: data.thumbnail.source] if data.thumbnail and not line.imgs
 			catch

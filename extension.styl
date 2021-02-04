@@ -1,16 +1,19 @@
 $prim = #07d
 $prim1 = #07d1
 $prim2 = #07d2
+$fontFamily = unquote("'Verdana',sans-serif")
+$fontSize = 9pt
+// $fontFamily = unquote("'Roboto Condensed',sans-serif")
+// $fontSize = 12pt
+// $fontFamily = unquote("'Schoolbell','Roboto Condensed',sans-serif")
+// $fontSize = 12pt
 body, h1, h2, h3, h4, h5, h6, p, a, span
-	font-family "Roboto",sans-serif !important
+	font-family $fontFamily !important
 body
-	font-size 10pt
+	font-size $fontSize
 #_app
 	position fixed
-	left 0
-	top 0
-	width 100%
-	height 100%
+	inset 0
 	display flex
 	box-sizing border-box
 	color #000
@@ -134,12 +137,12 @@ body
 	.mw-page-container
 		background #f8f9fa
 	.mw-body-content
-		font-size 1em
+		font-size $fontSize
 	.mw-mmv-lightbox-open> *
 		display unset
 	.mwe-popups
 		border-radius 8px
-		font-size 1em
+		font-size $fontSize
 		overflow hidden
 		box-shadow 0 2px 4px #888c,0 8px 16px 4px #8883
 		pointer-events none
@@ -321,15 +324,18 @@ body
 			margin 0
 		.taxon
 			margin-top 8px
-			font-size 11pt
+			font-size $fontSize + 4
 			color #e26
 			> span
 				font-weight 400
 				font-style normal
 		.species
-			font-size 10pt
+			font-size $fontSize + 2
 	#iconic_taxa_facet
 		display none
+._ebird
+	.Tooltip--license
+		display none !important
 
 ._row
 	display flex

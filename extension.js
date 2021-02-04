@@ -10,11 +10,13 @@
 		inaturalist: /inaturalist\.(org|ca)/.test(host),
 		biolib: /biolib\.cz/.test(host),
 		bugguide: /bugguide\.net/.test(host),
-		fishbase: /bugguide\.net/.test(host)
+		fishbase: /fishbase\.se/.test(host),
+		ebird: /ebird\.org/.test(host)
 	}
 	t.wikiPage = t.wikipedia || t.wikicommons || t.wikispecies
 	t.wiki = t.wikiPage || t.wikiImg
 	t.imgurEdit = t.imgur && pathname == "/edit"
+	t.imgurView = t.imgur && /^\/[A-Za-z\d]{7}($|\?)/.exec(pathname)
 	t.inaturalistSearch = t.inaturalist && pathname == "/taxa/search"
 	let [styl, code] = await Promise.all([
 		(await fetch(chrome.runtime.getURL("extension.styl"))).text(),

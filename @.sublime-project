@@ -5,9 +5,15 @@
 		"folder_exclude_patterns": []
 	}],
 	"settings": {
-		// "font_face": "Roboto",
-		// "font_size": 10,
+		"font_face": "Verdana",
+		"font_size": 9,
+		"tab_size": 3,
+		// "font_face": "Roboto Condensed",
+		// "font_size": 12,
 		// "tab_size": 4,
+		// "font_face": "Schoolbell",
+		// "font_size": 12,
+		// "tab_size": 3,
 		"wrap_width": 70
 	},
 	"build_systems": [{

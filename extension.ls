@@ -450,31 +450,51 @@ App =
 				q = that.href.split \/ .[* - 1]
 				@summ = await (await fetch "https://vi.wikipedia.org/api/rest_v1/page/summary/#q")json!
 				m.redraw!
-		| t.imgurEdit
-			widthEl = document.getElementById \width
-			heightEl = document.getElementById \height
-			sizeEl = document.getElementById \crop-dimensions
-			@imgurEditRatio = @imgurEditRatioOrg = +(widthEl.value / heightEl.value)toFixed 3
-			window.addEventListener \mousemove (event) !~>
-				if event.which is 1
-					[, w, h] = /^(\d+)x(\d+)$/exec sizeEl.innerText
-					@imgurEditRatio = +(w / h)toFixed 3
-					m.redraw!
-			for el in [widthEl, heightEl]
-				el.addEventListener \change (event) !~>
-					@imgurEditRatio = @imgurEditRatioOrg = +(widthEl.value / heightEl.value)toFixed 3
-					m.redraw!
 		| t.imgur
-			if location.search is \?state=taxon
-				@token = /access_token=([a-z\d]+)/exec location.hash .1
-				chrome.storage.local.set do
-					token: @token
-					tokenTime: Date.now!
-					@closeTab
-		| t.inaturalistSearch
-			els = document.querySelectorAll ".taxon_list_taxon> .noimg"
-			for el in els
-				el.remove!
+			switch
+			| t.imgurEdit
+				widthEl = document.getElementById \width
+				heightEl = document.getElementById \height
+				sizeEl = document.getElementById \crop-dimensions
+				@imgurEditRatio = @imgurEditRatioOrg = +(widthEl.value / heightEl.value)toFixed 3
+				window.addEventListener \mousemove (event) !~>
+					if event.which is 1
+						[, w, h] = /^(\d+)x(\d+)$/exec sizeEl.innerText
+						@imgurEditRatio = +(w / h)toFixed 3
+						m.redraw!
+				for el in [widthEl, heightEl]
+					el.addEventListener \change (event) !~>
+						@imgurEditRatio = @imgurEditRatioOrg = +(widthEl.value / heightEl.value)toFixed 3
+						m.redraw!
+			| t.imgurView
+				usp = new URLSearchParams location.search
+				if usp.get \_taxonDelete
+					timer = setInterval !~>
+						if el = document.querySelector \.image-delete
+							el.click!
+							clearInterval timer
+							setTimeout !~>
+								el = document.querySelector \.DeleteImageDialog-confirm--accountRemove
+								el.click!
+								timer2 = setInterval !~>
+									unless document.querySelector \.image-delete
+										@closeTab!
+								, 500
+							, 100
+					, 500
+			else
+				if location.search is \?state=taxon
+					@token = /access_token=([a-z\d]+)/exec location.hash .1
+					chrome.storage.local.set do
+						token: @token
+						tokenTime: Date.now!
+						@closeTab
+		| t.inaturalist
+			switch
+			| t.inaturalistSearch
+				els = document.querySelectorAll ".taxon_list_taxon> .noimg"
+				for el in els
+					el.remove!
 		| t.biolib
 			setTimeout !~>
 				document.activeElement.blur!
@@ -711,7 +731,7 @@ App =
 					@copy " # #id"
 					notify.update "Đã upload ảnh Imgur: #id"
 					if type is \URL
-						url = "https://imgur.com/edit?deletehash=#deletehash&album_id=#album&_id=#id"
+						url = "https://imgur.com/edit?deletehash=#deletehash&album_id=#album&_taxonId=#id"
 						if isOpenNewTab
 							window.open url
 						else
@@ -915,9 +935,13 @@ App =
 						else
 							opts.link? target, link
 				textEl = null
-				if el = target.querySelector ":scope> i:first-child"
-					if el.innerText.trim!0 is /[A-Z]/
+				if el = target.querySelector ":scope> a:not([data-excl])"
+					if el.nextSibling?textContent.0 is \:
 						textEl = el
+				unless textEl
+					if el = target.querySelector ":scope> i:first-child"
+						if el.innerText.trim!0 is /[A-Z]/
+							textEl = el
 				unless textEl
 					if el = target.querySelector ":scope> i> a:not([data-excl])"
 						if el.innerText.trim!0 is /[A-Z]/
@@ -956,7 +980,7 @@ App =
 			tab = rank?tab ? ""
 			notMatchTab ?= tab
 			subspeciesRegex = ///
-				^([A-Z][a-z]+|[A-Z]\.)\s
+				^[A-Z]([a-z]+|\.)?\s
 				(\([a-z-]{2,}\)|[a-z-]{2,}|[a-z]\.)\s
 				(?:subsp\.\s)?
 				([a-z-]{2,})
@@ -1071,8 +1095,9 @@ App =
 						"W+RMB": " # ? | %"
 					if caption = captions[combo]
 						{src} = target
+						data = ""
 						if src.includes \//upload.wikimedia.org/
-							src = match src
+							data = match src
 								| /\/\d+px-.+/
 									src
 										.replace /\https:\/\/upload\.wikimedia\.org\/wikipedia\/(commons|en)\/thumb\/./ ""
@@ -1081,27 +1106,40 @@ App =
 									src.replace /-\d+px-/ \-220px-
 								else
 									src.replace /https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\/./ ""
-							# src .= replace /%([A-Fa-f\d]{2})/g (s, s1) ~> String.fromCharCode parseInt s1, 16
 						else if src.includes \//static.inaturalist.org/
-							[, data, ext] = /^https:\/\/static\.inaturalist\.org\/photos\/(\d+)\/[a-z]+\.([a-zA-Z]*)/exec src
+							[, name, ext] = /^https:\/\/static\.inaturalist\.org\/photos\/(\d+)\/[a-z]+\.([a-zA-Z]*)/exec src
 							type = {jpg: "" jpeg: \e png: \p JPG: \J JPEG: \E PNG: \P "": \u}[ext]
-							src = ":#data#type"
+							data = ":#name#type"
 						else if src.includes \//live.staticflickr.com/
-							data = /^https:\/\/live\.staticflickr\.com\/(\d+\/\d+_[\da-f]+)_[a-z]\.jpg+/exec src .1
-							src = "@#data"
+							name = /^https:\/\/live\.staticflickr\.com\/(\d+\/\d+_[\da-f]+)_[a-z]\.jpg+/exec src .1
+							data = "@#name"
 						else if src.includes \//www.biolib.cz/
-							data = /(\d+)\.jpg$/exec src .1
-							src = "%#data"
+							name = /(\d+)\.jpg$/exec src .1
+							data = "%#name"
 						else if src.includes \//bugguide.net/
-							data = /([A-Z\d]+)\.jpg$/exec src .1
+							name = /([A-Z\d]+)\.jpg$/exec src .1
 							if src.includes \/raw/
-								data += \r
-							src = "~#data"
+								name += \r
+							data = "~#name"
+						else if src.includes \fishbase.se/
+							isUpload = src.includes \UploadPhoto and \^ or ""
+							regex =
+								if src.includes \workimagethumb
+									/%2FUploadPhoto%2Fuploads%2F(.+)\.[a-z]+&w=\d+$/i
+								else /([^/]+)\.[a-z]+$/i
+							name = regex.exec src .1 .toLowerCase!
+							data = "^#isUpload#name"
+						else if src.includes \//cdn.download.ams.birds.cornell.edu/
+							if name = /\/asset\/(\d+)1/exec src ?.1
+								data = "+#name"
+							else
+								@notify "Không thể lấy dữ liệu hình ảnh"
 						else if src.includes \//i.imgur.com/
-							src = /https:\/\/i\.imgur\.com\/([A-Za-z\d]{7})/exec src .1
-						@data = caption.replace \% src
-						@copy @data
-						@mark target
+							data = /https:\/\/i\.imgur\.com\/([A-Za-z\d]{7})/exec src .1
+						if data
+							@data = caption.replace \% data
+							@copy @data
+							@mark target
 					else
 						switch combo
 						| \Alt+RMB
@@ -1253,8 +1291,15 @@ App =
 					window.open url
 			| \G+I
 				q = firstHeading.innerText - \Category:
-				url = "https://inaturalist.org/taxa/search?view=list&q=#q"
-				location.href = url
+				location.href = "https://inaturalist.org/taxa/search?view=list&q=#q"
+			| \G+E
+				q = firstHeading.innerText - \Category:
+				data = await (await fetch "https://api.ebird.org/v2/ref/taxon/find?key=jfekjedvescr&q=#q")json!
+				item = data.find (.name.includes name) or data.0
+				if item
+					location.href = "https://ebird.org/species/#{item.code}"
+				else
+					@notify "Không tìm thấy trên ebird.org"
 			| \I+U
 				if blob = await @readCopiedImgBlob!
 					base64 = await @readAsBase64 blob
