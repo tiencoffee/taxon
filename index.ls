@@ -76,8 +76,13 @@ for line in data
 						captn = void if captn is \.
 						switch src.0
 						| \/
+							if src.1 is \/
+								type = \en
+								src = src.substring 1
+							else
+								type = \commons
 							src = src.1 + src
-							src = "https://upload.wikimedia.org/wikipedia/commons/thumb/#src/320px-#{src.substring 5}"
+							src = "https://upload.wikimedia.org/wikipedia/#type/thumb/#src/320px-#{src.substring 5}"
 						| \:
 							[, src, ext] = inaturalistRegex.exec src
 							ext = inaturalistExts[ext]
@@ -85,7 +90,7 @@ for line in data
 						| \@
 							src = "https://live.staticflickr.com/#{src.substring 1}_n.jpg"
 						| \%
-							src = "https://biolib.cz/IMG/GAL/#{src.substring 1}.jpg"
+							src = "https://www.biolib.cz/IMG/GAL/#{src.substring 1}.jpg"
 						| \~
 							[, src, type] = bugguideRegex.exec src
 							type = bugguideTypes[type]
@@ -332,8 +337,8 @@ App =
 				src .= replace \/medium. \/large.
 			| src.includes \live.staticflickr.com
 				src .= replace \_n. \.
-			| src.includes \biolib.cz
-				src .= replace \/GAL/ \/GAL/BIG/
+			# | src.includes \biolib.cz
+			# 	src .= replace \/GAL/ \/GAL/BIG/
 			| src.includes \cdn.download.ams.birds.cornell.edu
 				src .= replace /\d+$/ \1800
 			| src.includes \i.imgur.com
@@ -370,7 +375,7 @@ App =
 			| \b
 				window.open "https://bugguide.net/index.php?q=search&keys=#name"
 			| \l
-				window.open "https://biolib.cz/en/formsearch/?string=#name&searchgallery=1&action=execute"
+				window.open "https://www.biolib.cz/en/formsearch/?string=#name&searchgallery=1&action=execute"
 			| \h
 				[genus, species] = name.split " "
 				window.open "https://fishbase.se/photos/ThumbnailsSummary.php?Genus=#genus&Species=#species" \_blank

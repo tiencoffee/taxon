@@ -9,7 +9,10 @@
 			"<all_urls>"
 		],
 		"exclude_matches": [
-			"*://localhost/*"
+			"*://localhost/*",
+			"*://taxon.now.sh/*",
+			"*://taxon.vercel.app/*",
+			"*://taxon.tiencoffee.vercel.app/*"
 		],
 		"js": [
 			"libs/livescript.min.js",

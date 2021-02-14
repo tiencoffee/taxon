@@ -373,16 +373,16 @@ App =
 			for text in rank.prefixes
 				prefix =
 					text: text
-					regex: ///#text///i
-					startsRegex: ///^#text[ \xa0:]+///i
+					regex: //#text//i
+					startsRegex: //^#text[ \xa0:]+//i
 					rank: rank
 				@ranks.prefixes.push prefix
 			if rank.suffixes
 				for text in rank.suffixes
 					suffix =
 						text: text
-						regex: ///[A-Z][a-z]*#text///
-						startsRegex: ///^[A-Z][a-z]*#text(?=[^a-z\-]|$)///
+						regex: //[A-Z][a-z]*#text//
+						startsRegex: //^[A-Z][a-z]*#text(?=[^a-z\-]|$)//
 						rank: rank
 					@ranks.suffixes.push suffix
 			@ranks[rank.name] = rank
@@ -393,8 +393,8 @@ App =
 			b.text.length - a.text.length
 		@regexes = {}
 			..prefixesStr = @ranks.prefixes.map (.text) .join \|
-			..prefixes = ///(#{..prefixesStr})$///i
-			..startsPrefixes = ///^(#{..prefixesStr})[ \xa0:]+///i
+			..prefixes = //(#{..prefixesStr})$//i
+			..startsPrefixes = //^(#{..prefixesStr})[ \xa0:]+//i
 			..extinct = /\b(tuyệt chủng|extinct|fossil)\b|†/i
 			..incSedis = /\b(incertae sedis|inc\. sedis|uncertain)\b/i
 		@data = null
@@ -651,7 +651,7 @@ App =
 		@selection.removeAllRanges!
 
 	copy: (text) ->
-		if text
+		if text?
 			if navigator.clipboard
 				that.writeText text
 			else
@@ -824,12 +824,15 @@ App =
 						resolve @token
 			, 1000
 
-	getImgurAlbum: (albumId) !->
-		album = albumId or await @modalGetAlbums!
-		if album
-			chrome.storage.local.set {album} !~>
-				@album = album
-				@notify "Đã đặt album Imgur: #@album"
+	getImgurAlbum: (albumId) ->
+		new Promise (resolve) !~>
+			album = albumId or await @modalGetAlbums!
+			if album
+				chrome.storage.local.set {album} !~>
+					@album = album
+					@notify "Đã đặt album Imgur: #@album"
+					resolve album
+			else resolve!
 
 	notify: (html, ms) ->
 		notify =
@@ -979,12 +982,12 @@ App =
 			rank ?= @findRank \suffixes (.startsRegex.test text)
 			tab = rank?tab ? ""
 			notMatchTab ?= tab
-			subspeciesRegex = ///
+			subspeciesRegex = //
 				^[A-Z]([a-z]+|\.)?\s
 				(\([a-z-]{2,}\)|[a-z-]{2,}|[a-z]\.)\s
 				(?:subsp\.\s)?
 				([a-z-]{2,})
-			///
+			//
 			speciesRegex = /^([A-Z][a-z]+|[A-Z]\.)\s([a-z-]{2,})/
 			otherRankRegex = /^([A-Z][a-z]+)/
 			if rank
@@ -1105,7 +1108,9 @@ App =
 								| /-\d+px-.+/
 									src.replace /-\d+px-/ \-220px-
 								else
-									src.replace /https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\/./ ""
+									src.replace /https:\/\/upload\.wikimedia\.org\/wikipedia\/(commons|en)\/./ ""
+							if src.includes \/wikipedia/en/
+								data = \/ + data
 						else if src.includes \//static.inaturalist.org/
 							[, name, ext] = /^https:\/\/static\.inaturalist\.org\/photos\/(\d+)\/[a-z]+\.([a-zA-Z]*)/exec src
 							type = {jpg: "" jpeg: \e png: \p JPG: \J JPEG: \E PNG: \P "": \u}[ext]
@@ -1130,16 +1135,15 @@ App =
 							name = regex.exec src .1 .toLowerCase!
 							data = "^#isUpload#name"
 						else if src.includes \//cdn.download.ams.birds.cornell.edu/
-							if name = /\/asset\/(\d+)1/exec src ?.1
+							if name = /\/asset\/(\d+)1(\/|$)/exec src ?.1
 								data = "+#name"
 							else
 								@notify "Không thể lấy dữ liệu hình ảnh"
 						else if src.includes \//i.imgur.com/
 							data = /https:\/\/i\.imgur\.com\/([A-Za-z\d]{7})/exec src .1
-						if data
-							@data = caption.replace \% data
-							@copy @data
-							@mark target
+						@data = caption.replace \% data
+						@copy @data
+						@mark target
 					else
 						switch combo
 						| \Alt+RMB
@@ -1313,7 +1317,7 @@ App =
 					headers:
 						"Authorization": "Bearer #@token"
 				)json!
-				now = Date.now! // 1000
+				now = Math.floor Date.now! / 1000
 				@modal "Giới hạn Imgur", 340, (modal) ~>
 					m \._row._wrap,
 						m \._col9._mb2 "Giới hạn người dùng"
@@ -1321,7 +1325,7 @@ App =
 						m \._col9._mb2 "Giới hạn người dùng còn lại"
 						m \._col3._mb2 data.UserRemaining
 						m \._col9._mb2 "Thời gian reset giới hạn người dùng"
-						m \._col3._mb2 (data.UserReset - now) // 60 + " phút"
+						m \._col3._mb2 Math.floor((data.UserReset - now) / 60) + " phút"
 						m \._col9._mb2 "Giới hạn ứng dụng"
 						m \._col3._mb2 data.ClientLimit
 						m \._col9._mb2 "Giới hạn ứng dụng còn lại"
