@@ -50,25 +50,25 @@ for , info of infos
 	info.count = 0
 
 for line in data
-	imgs1 = void
-	[head, text1, tail] = line.split " # "
-	[, lv1, name1, ex1, disam1] = headRegex.exec head
-	lv1 = lv1.length + 1
-	name1 = " " if name1 is \_
-	if disam1
-		disam1 =
-			if disam1.1 is \\
-				\_( + disam1.substring(2) + \)
+	imgs = void
+	[head, text, tail] = line.split " # "
+	[, lv, name, ex, disam] = headRegex.exec head
+	lv = lv.length + 1
+	name = " " if name is \_
+	if disam
+		disam =
+			if disam.1 is \\
+				\_( + disam.substring(2) + \)
 			else
-				disam1.substring 1
-	disam1 .= replace " " \_ if disam1
-	ex1 = Boolean ex1
-	if text1
-		if tailRegex.test text1
-			tail = text1
-			text1 = ""
+				disam.substring 1
+	disam .= replace " " \_ if disam
+	ex = Boolean ex
+	if text
+		if tailRegex.test text
+			tail = text
+			text = ""
 		if tail
-			imgs1 = tail
+			imgs = tail
 				.split " | "
 				.map (imgg) ~>
 					[src, captn] = imgg.split " ; "
@@ -106,9 +106,9 @@ for line in data
 								src = "https://i.imgur.com/#{src}m.png"
 						infos.img.count++
 						{src, captn}
-	node = [lv1, name1, ex1, disam1,, text1, imgs1]
-	if refs.some (.0 >= lv1)
-		refs .= filter (.0 < lv1)
+	node = [lv, name, ex, disam,, text, imgs]
+	if refs.some (.0 >= lv)
+		refs .= filter (.0 < lv)
 	ref = refs[* - 1]
 	ref[]4.push node
 	refs.push node
@@ -206,6 +206,7 @@ App =
 		@rightClickAction = localStorage.taxonRightClickAction
 
 	oncreate: !->
+		heightEl.style.height = lines.length * lineH + \px
 		window.onkeydown = (event) !~>
 			unless event.repeat
 				{code} := event
@@ -251,9 +252,12 @@ App =
 						@closeFind!
 		window.onkeyup = window.onblur = (event) !~>
 			code := void
+		scrollEl.scrollTop = +localStorage.taxonTop or 0
+		scrollEl.style.scrollBehavior = \smooth
 		do window.onresize = !~>
-			@len = Math.ceil innerHeight / lineH
-			@goLine!
+			@len = Math.ceil(innerHeight / lineH) + 1
+			@onscrollScroll!
+			m.redraw!
 
 	goLine: (start = @start, noScroll) !->
 		start ?= +localStorage.taxonStart or 0
@@ -301,7 +305,8 @@ App =
 	findGo: (num = 0) !->
 		if @findLines.length
 			@findIndex = (@findIndex + num) %% @findLines.length
-			@goLine @findLines[@findIndex]index - 4
+			scrollEl.scrollTop = (@findLines[@findIndex]index - 4) * lineH
+			@onscrollScroll!
 
 	toggleFindExact: !->
 		not= @findExact
@@ -472,8 +477,17 @@ App =
 			m.redraw.sync!
 			@popper.forceUpdate!
 
-	onscrollScroll: !->
-		@goLine Math.ceil(scrollEl.scrollTop / lineH), yes
+	onscrollScroll: (evt) !->
+		evt.redraw = no if evt
+		top = scrollEl.scrollTop
+		mod = top % lineH
+		presEl.style.transform = "translateY(#{top - mod}px)"
+		localStorage.taxonTop = top
+		start = Math.floor top / lineH
+		unless start is @start
+			@start = start
+			@lines = lines.slice start, start + @len
+			evt.redraw = yes if evt
 		@mouseleaveName!
 
 	view: ->
@@ -509,9 +523,7 @@ App =
 											src: img.src
 											onmousedown: !~>
 												@mousedownImg img, it
-				m \#heightEl,
-					style:
-						height: lines.length * lineH + \px
+				m \#heightEl
 			if infoLv
 				m \#infosEl,
 					for , info of infos

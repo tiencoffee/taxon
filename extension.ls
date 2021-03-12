@@ -665,22 +665,23 @@ App =
 				document.execCommand \copy
 				el.remove!
 
-	openLinksExtract: (targets, noOpen) ->
-		count = 0
-		@extract targets,
+	openLinksExtract: (targets, noOpen) !->
+		urls = []
+		@data = @extract targets,
 			link: (target, link) !~>
+				return if noOpen and urls.length >= 10
 				unless target.dataset.openedLi
-					if count < 10
-						target.dataset.openedLi = 1
-						if link
-							unless link.classList.contains \new
-								link.dataset.openedA = 1
-								unless noOpen
-									window.open link.href
-								count++
-		if count
+					target.dataset.openedLi = 1
+					if link
+						unless link.classList.contains \new
+							link.dataset.openedA = 1
+							urls.push link.href
+		if urls.length
 			unless noOpen
-				chrome.runtime.sendMessage \openTabs
+				@copy @data
+				chrome.runtime.sendMessage do
+					act: \openUrls
+					urls: urls
 		else
 			@notify "Đã mở hết link"
 
@@ -1111,8 +1112,8 @@ App =
 									src.replace /https:\/\/upload\.wikimedia\.org\/wikipedia\/(commons|en)\/./ ""
 							if src.includes \/wikipedia/en/
 								data = \/ + data
-						else if src.includes \//static.inaturalist.org/
-							[, name, ext] = /^https:\/\/static\.inaturalist\.org\/photos\/(\d+)\/[a-z]+\.([a-zA-Z]*)/exec src
+						else if src is /\/\/(static\.inaturalist\.org|inaturalist-open-data\.s3\.amazonaws\.com)\//
+							[, name, ext] = /\/photos\/(\d+)\/[a-z]+\.([a-zA-Z]*)/exec src
 							type = {jpg: "" jpeg: \e png: \p JPG: \J JPEG: \E PNG: \P "": \u}[ext]
 							data = ":#name#type"
 						else if src.includes \//live.staticflickr.com/
@@ -1126,11 +1127,11 @@ App =
 							if src.includes \/raw/
 								name += \r
 							data = "~#name"
-						else if src.includes \fishbase.se/
-							isUpload = src.includes \UploadPhoto and \^ or ""
+						else if src is /fishbase\.[a-z]+\//
+							isUpload = src is /uploadphoto/i and \^ or ""
 							regex =
 								if src.includes \workimagethumb
-									/%2FUploadPhoto%2Fuploads%2F(.+)\.[a-z]+&w=\d+$/i
+									/%2fuploadphoto%2fuploads%2f(.+)\.[a-z]+&w=\d+$/i
 								else /([^/]+)\.[a-z]+$/i
 							name = regex.exec src .1 .toLowerCase!
 							data = "^#isUpload#name"
@@ -1193,6 +1194,10 @@ App =
 					@mark ul
 				| \Alt+RMB \Shift+Alt+RMB \Alt+LMB \Shift+Alt+LMB
 					@openLinksExtract ul.children, combo in [\Shift+Alt+RMB \Shift+Alt+LMB]
+				| \Backspace+RMB \Backspace+LMB
+					subUls = ul.querySelectorAll \ul
+					for subUl in subUls
+						subUl.remove!
 			| target.closest \.CategoryTreeItem
 				wrapper = target.closest \#mw-subcategories
 				switch combo
