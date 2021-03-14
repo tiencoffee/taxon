@@ -2,6 +2,7 @@ App =
 	oninit: !->
 		for k, val of @
 			@[k] = val.bind @ if typeof val is \function
+		@cfg = null
 		@cssUnitless =
 			animationIterationCount: yes
 			borderImageOutset: yes
@@ -417,12 +418,14 @@ App =
 		window.addEventListener \keydown @onkeydown, yes
 		window.addEventListener \keyup @onkeyup, yes
 		window.addEventListener \visibilitychange @onvisibilitychange, yes
-		unless t.imgur
-			chrome.storage.local.get [\token \tokenTime \album] ({@token, tokenTime, @album}) !~>
-				unless @token and tokenTime + 6048e5 > Date.now!
-					await @getImgurToken!
-				unless @album
-					until await @getImgurAlbum! =>
+		chrome.storage.local.get do
+			<[cfg token tokenTime album]>
+			({@cfg = {}, @token, tokenTime, @album}) !~>
+				unless t.imgur
+					unless @token and tokenTime + 6048e5 > Date.now!
+						await @getImgurToken!
+					unless @album
+						until await @getImgurAlbum! =>
 		switch
 		| t.wiki
 			@summ = null
@@ -691,6 +694,10 @@ App =
 		link.href = url
 		document.head.appendChild link
 
+	setCfg: (prop, val, cb) !->
+		@cfg[prop] = val
+		chrome.storage.local.set {@cfg}, cb
+
 	openTabGetImgurToken: ->
 		window.open do
 			\https://api.imgur.com/oauth2/authorize?client_id=92ac14aabe20918&response_type=token&state=taxon
@@ -934,8 +941,8 @@ App =
 						switch
 						| innerText is \†
 							link.dataset.excl = 1
-						| @regexes.prefixes.test innerText
-							link.dataset.excl = 1
+						# | @regexes.prefixes.test innerText
+						# 	link.dataset.excl = 1
 						else
 							opts.link? target, link
 				textEl = null
@@ -1190,8 +1197,10 @@ App =
 				| \RMB \LMB
 					@data = @extract ul.children,
 						deep: yes
-					@copy @data
+					await @copy @data
 					@mark ul
+					if @cfg.copyExtractDeepAndOpenLinkExtract
+						@openLinksExtract ul.children
 				| \Alt+RMB \Shift+Alt+RMB \Alt+LMB \Shift+Alt+LMB
 					@openLinksExtract ul.children, combo in [\Shift+Alt+RMB \Shift+Alt+LMB]
 				| \Backspace+RMB \Backspace+LMB
@@ -1244,8 +1253,10 @@ App =
 				switch combo
 				| \RMB \LMB
 					data = @extract col
-					@copy data
+					await @copy data
 					@mark col
+					if @cfg.copyExtractDeepAndOpenLinkExtract
+						@openLinksExtract col
 				| \Alt+RMB \Shift+Alt+RMB \Alt+LMB \Shift+Alt+LMB
 					@openLinksExtract col, combo in [\Shift+Alt+RMB \Shift+Alt+LMB]
 			| target.matches '#firstHeading, h1, b'
@@ -1343,6 +1354,23 @@ App =
 				location.href = document.querySelector '#ca-history a' .href
 			| \W+M
 				location.href = document.querySelector '#ca-move a' .href
+			| \A
+				cfgs =
+					c: \copyExtractDeepAndOpenLinkExtract
+				text = "Đặt cấu hình (key + val, val sẽ được convert sang số nếu có thể, vd: c1):"
+				for k, val of cfgs
+					text += "\n(#k): #val: #{@cfg[val]}"
+				if text = prompt text
+					key = text.0
+					prop = cfgs[key]
+					if prop
+						if val = text.substring 1
+							val = +val if isFinite val
+						else val = void
+						@setCfg prop, val, !~>
+							@notify "#{cfgs[key]}: #val"
+					else
+						@notify "Key '#key' không hợp lệ"
 			| \ArrowLeft
 				if el = document.querySelector \.nav-button
 					el.click!

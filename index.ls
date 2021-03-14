@@ -406,6 +406,7 @@ App =
 			summary = void
 			{imgs} = line
 			width = 320
+			imgCaptnPlch = imgs?some (?captn) and \-
 			popup =
 				view: ~>
 					m \#popupBody,
@@ -428,8 +429,7 @@ App =
 													src: img.src
 													onload: !~>
 														@popper?forceUpdate!
-											if img.captn
-												m \.popupCaptn that
+											m \.popupCaptn img.captn || imgCaptnPlch
 											if imgs.length is 2
 												m \.popupGenderCaptn i && \Cái || \Đực
 						if summary
@@ -484,7 +484,7 @@ App =
 		presEl.style.transform = "translateY(#{top - mod}px)"
 		localStorage.taxonTop = top
 		start = Math.floor top / lineH
-		unless start is @start
+		unless start is @start and @lines.length is @len
 			@start = start
 			@lines = lines.slice start, start + @len
 			evt.redraw = yes if evt
