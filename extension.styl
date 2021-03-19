@@ -18,7 +18,7 @@ body
 	box-sizing border-box
 	color #000
 	pointer-events none
-	z-index 2000
+	z-index 120000
 	*
 		box-sizing border-box
 ._sideLeft
@@ -35,7 +35,6 @@ body
 ._button
 	padding 4px 8px
 	border 0
-	border-radius 8px
 	font inherit
 	background $prim
 	color #fff
@@ -43,7 +42,6 @@ body
 ._input
 	padding 4px 8px
 	border 0
-	border-radius 8px
 	font inherit
 	background #f0f1f2
 	outline 0
@@ -58,13 +56,11 @@ body
 ._notify
 	margin-top 4px
 	padding 4px 8px
-	border-radius 8px
 	display inline-flex
 	align-items center
 	background #112
 	color #fff
 	animation _fadeIn5 .1s forwards
-	z-index 2050
 ._modals
 	pointer-events none
 ._modal
@@ -72,18 +68,15 @@ body
 	top 6%
 	width fit-content
 	max-height 80%
-	border-radius 8px
 	background #fff
 	box-shadow 0 2px 4px #888c,0 8px 16px 4px #8883
 	transition margin-top .1s
 	animation _fadeIn95 .1s forwards
 	pointer-events auto
-	z-index 2030
 ._modalClose
 	width 24px
 	height 24px
 	border 0
-	border-radius 6px
 	display flex
 	justify-content center
 	align-items center
@@ -98,7 +91,7 @@ body
 ._mark
 	position fixed
 	pointer-events none
-	z-index 2060
+	z-index 120010
 ._copy
 	position fixed
 	left -10px
@@ -141,10 +134,10 @@ body
 	.mw-mmv-lightbox-open> *
 		display unset
 	.mwe-popups
-		border-radius 8px
+		border-radius 0 !important
 		font-size $fontSize
 		overflow hidden
-		box-shadow 0 2px 4px #888c,0 8px 16px 4px #8883
+		box-shadow 0 2px 4px #3338,0 8px 16px 4px #3333
 		pointer-events none
 		z-index 2040
 		footer
@@ -171,8 +164,6 @@ body
 	img[src$="/7/74/Red_Pencil_Icon.png"]
 	.thumbinner .magnify
 			display none
-	[style*="border:solid 1px"]
-		border-radius 8px
 	#toc
 		display block
 		overflow auto
@@ -180,19 +171,7 @@ body
 		ul
 			background unset
 			box-shadow unset
-	table
-	#toc
-	.thumb
-	.thumbinner
-	._summBox
-		border-radius 8px
-	.thumbimage
-	.image> img
-	.thumbinner> img
-	._summImg
-		border-radius 6px
 	.noresize
-		border-radius 6px
 		overflow hidden
 	#firstHeading
 		> *
@@ -208,7 +187,6 @@ body
 			margin 0
 	ul
 		&:hover
-			border-radius 4px
 			background $prim1
 			box-shadow 0 0 0 2px $prim1
 		ul
@@ -235,7 +213,6 @@ body
 ._imgurEdit
 	._sideRight
 		width 150px
-		border-radius 8px 4px 0 4px
 		align-self flex-end
 ._inaturalist
 	*
@@ -253,20 +230,14 @@ body
 		margin-top 24px
 	.form-control
 		border 0
-		border-radius 8px
 		box-shadow 0 0 0 1px inset #ccc
 		transition none
 		&:focus
 			box-shadow 0 0 0 2px inset #07d
 	.thumbnail
 	.ac-menu
-		border-radius 8px
 		overflow hidden !important
-	.ac-thumb> img
-	.ac-select-thumb> img
-		border-radius 6px
 	.photo-hover
-		border-radius 8px
 		overflow hidden
 		transition-duration 50ms
 		> .btn
@@ -277,20 +248,11 @@ body
 		background-size contain !important
 		background-repeat no-repeat
 		background-color #ccc
-	.CoverImage
-		border-radius 8px
 ._inaturalistSearch
 	#wrapper
 		padding-top 16px
 		> h2
 			display none
-	#q
-	.photo
-	.button
-	.modal_link
-	img[alt=Square]
-	img[alt$=" s"]
-		border-radius 8px
 	#q
 		outline 0
 	.modal_link
@@ -301,21 +263,17 @@ body
 		animation _fadeIn5 .1s forwards
 	.modal-backdrop
 		background #8886 !important
-	.modal-content
-		border-radius 16px !important
 	.photo-modal-content
-		border-radius 16px
 		overflow hidden
 	.ui-dialog
 		position fixed
 		top 5%
 		width fit-content !important
-		border-radius 8px
+		border 0
+		border-radius 0
 		> .ui-dialog-content
 			height 100% !important
 			max-height 90% !important
-		.photo
-			border-radius 8px
 	.taxon_list_taxon
 		margin-bottom 0 !important
 		> a.right
@@ -336,6 +294,9 @@ body
 		display none
 ._ebird
 	.Tooltip--license
+		display none !important
+._seriouslyfish
+	#ezmobfooter
 		display none !important
 
 ._row

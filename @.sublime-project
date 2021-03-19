@@ -5,19 +5,19 @@
 		"folder_exclude_patterns": []
 	}],
 	"settings": {
-		// "font_face": "Verdana",
-		// "font_size": 9,
-		// "tab_size": 3,
+		"font_face": "Verdana",
+		"font_size": 9,
+		"tab_size": 3,
 		// "font_face": "Roboto",
 		// "font_size": 10,
 		// "tab_size": 4,
-		"font_face": "InputMonoNarrow",
-		"font_size": 9,
-		"tab_size": 2,
+		// "font_face": "InputMonoNarrow",
+		// "font_size": 9,
+		// "tab_size": 2,
 		// "font_face": "Schoolbell",
 		// "font_size": 12,
 		// "tab_size": 3,
-		// "wrap_width": 70
+		"wrap_width": 70
 	},
 	"build_systems": [{
 		"name": "Build",

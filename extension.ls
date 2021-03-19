@@ -404,7 +404,8 @@ App =
 		@selection = getSelection!
 		@token = null
 		@album = null
-		@isContextMenu = no
+		@canMiddleClick = yes
+		@canContextMenu = no
 		@comboRanks = []
 		@resetCombo!
 		@els = {}
@@ -414,6 +415,7 @@ App =
 		@imgurEditRatio2Img = (280 / 240)toFixed 3
 		window.addEventListener \mousedown @onmousedown, yes
 		window.addEventListener \mouseup @onmouseup, yes
+		window.addEventListener \auxclick @onauxclick, yes
 		window.addEventListener \contextmenu @oncontextmenu, yes
 		window.addEventListener \keydown @onkeydown, yes
 		window.addEventListener \keyup @onkeyup, yes
@@ -590,9 +592,14 @@ App =
 		if @lastCombo is event.which
 			@oncombo event
 
+	onauxclick: (event) !->
+		unless @canMiddleClick
+			event.preventDefault!
+			@canMiddleClick = yes
+
 	oncontextmenu: (event) !->
-		if @isContextMenu
-			@isContextMenu = no
+		if @canContextMenu
+			@canContextMenu = no
 		else
 			event.preventDefault!
 
@@ -633,8 +640,6 @@ App =
 		els = [els] unless \length of els
 		for el in els
 			rects = el.getClientRects!
-			{borderRadius} = getComputedStyle el
-			borderRadius = \4px if parseInt(borderRadius) < 4
 			for {x, y, width, height} in rects
 				markEl = document.createElement \div
 				markEl.className = \_mark
@@ -644,7 +649,6 @@ App =
 						top: [y + \px, y - 3 + \px]
 						width: [width + \px, width + 6 + \px]
 						height: [height + \px, height + 6 + \px]
-						borderRadius: [borderRadius, borderRadius]
 						background: [\#07d2 \#07d0]
 						boxShadow: ['0 0 0 2px #07d' '0 0 0 2px #07d2']
 					* duration: 150
@@ -718,7 +722,7 @@ App =
 			[type] = item.types.filter (.startsWith \image/)
 			item.getType type if type
 
-	uploadImgur: (image, type, isOpenNewTab) ->
+	uploadImgur: ({image, type = \URL, isOpenNewTab, isFemale}) ->
 		if @token and @album
 			{album} = @
 			notify = @notify "Đang upload ảnh Imgur" -1
@@ -736,8 +740,9 @@ App =
 				res = await res.json!
 				if res.success
 					{id, deletehash} = res.data
-					@copy " # #id"
 					notify.update "Đã upload ảnh Imgur: #id"
+					sep = isFemale and \| or \#
+					await @copy " #sep -#id"
 					if type is \URL
 						url = "https://imgur.com/edit?deletehash=#deletehash&album_id=#album&_taxonId=#id"
 						if isOpenNewTab
@@ -1069,6 +1074,8 @@ App =
 	doCombo: (combo, target, sel, event, args) !->
 		doCombo = (combo2 = combo, target2 = target, sel2 = sel, args2 = args) !~>
 			@doCombo combo2, target2, sel2, event, args2
+		comboIncludes = (...keys) ~>
+			//(^|\+)(#{keys.join \|})(\+|$)//test combo
 		if rank = @findRank (.combo is combo)
 			@comboRanks.push rank
 		else if combo is \0
@@ -1076,8 +1083,8 @@ App =
 		if target
 			switch
 			| combo is \Backquote+RMB
-				@isContextMenu = yes
-			| sel and combo in [\RMB \Slash]
+				@canContextMenu = yes
+			| sel and comboIncludes \RMB \Slash
 				@data = sel.replace @regexes.startsPrefixes, ""
 				@data = @upperFirst @data
 				@data = " # #@data"
@@ -1119,10 +1126,11 @@ App =
 									src.replace /https:\/\/upload\.wikimedia\.org\/wikipedia\/(commons|en)\/./ ""
 							if src.includes \/wikipedia/en/
 								data = \/ + data
-						else if src is /\/\/(static\.inaturalist\.org|inaturalist-open-data\.s3\.amazonaws\.com)\//
+						else if matched = src is /\/\/(static\.inaturalist\.org|inaturalist-open-data\.s3\.amazonaws\.com)\//
+							isAmazonAws = matched.1 is \inaturalist-open-data.s3.amazonaws.com and \: or ""
 							[, name, ext] = /\/photos\/(\d+)\/[a-z]+\.([a-zA-Z]*)/exec src
 							type = {jpg: "" jpeg: \e png: \p JPG: \J JPEG: \E PNG: \P "": \u}[ext]
-							data = ":#name#type"
+							data = ":#isAmazonAws#name#type"
 						else if src.includes \//live.staticflickr.com/
 							name = /^https:\/\/live\.staticflickr\.com\/(\d+\/\d+_[\da-f]+)_[a-z]\.jpg+/exec src .1
 							data = "@#name"
@@ -1139,7 +1147,7 @@ App =
 							regex =
 								if src.includes \workimagethumb
 									/%2fuploadphoto%2fuploads%2f(.+)\.[a-z]+&w=\d+$/i
-								else /([^/]+)\.[a-z]+$/i
+								else /(?:tn_)?([^/]+)\.[a-z]+$/i
 							name = regex.exec src .1 .toLowerCase!
 							data = "^#isUpload#name"
 						else if src.includes \//cdn.download.ams.birds.cornell.edu/
@@ -1148,20 +1156,23 @@ App =
 							else
 								@notify "Không thể lấy dữ liệu hình ảnh"
 						else if src.includes \//i.imgur.com/
-							data = /https:\/\/i\.imgur\.com\/([A-Za-z\d]{7})/exec src .1
+							name = /https:\/\/i\.imgur\.com\/([A-Za-z\d]{7})/exec src .1
+							data = "-#name"
 						@data = caption.replace \% data
 						@copy @data
 						@mark target
 					else
 						switch combo
-						| \Alt+RMB
-							@copy target.src
-							@mark target
-						| \I+RMB
+						| \I+RMB \I+MMB \Shift+I+RMB \Shift+I+MMB
+							@canMiddleClick = no
 							image = target.src
-							isOpenNewTab = t.inaturalist and target.classList.contains \photo
+							isOpenNewTab = comboIncludes \MMB or (t.inaturalist and target.classList.contains \photo)
 							@mark target
-							await @uploadImgur image, \URL isOpenNewTab
+							await @uploadImgur do
+								image: image
+								type: \URL
+								isOpenNewTab: isOpenNewTab
+								isFemale: comboIncludes \Shift
 			| target.matches "a:not(.new)[href]" and combo is \RMB
 				if combo is \RMB
 					window.open target.href
@@ -1302,28 +1313,44 @@ App =
 					location.href = url
 				else
 					window.open url
-			| \G \Shift+G
-				q = firstHeading.innerText - \Category:
-				url = "https://google.com/search?tbm=isch&q=#q"
-				if combo is \G
-					location.href = url
+			| \G \G+I \G+E \G+H \G+S
+				switch
+				| t.google
+					q = document.querySelector \#REsRA .value
+				| t.fishbase
+					q = document.querySelector ".ptitle a" .textContent
+				| t.inaturalist
+					q = document.querySelector \#q .value
+				| t.seriouslyfish
+					q = /[^/]+$/exec location.pathname .0
+						.replace /^./ (.toUpperCase!)
+						.replace /-/g " "
 				else
-					window.open url
-			| \G+I
-				q = firstHeading.innerText - \Category:
-				location.href = "https://inaturalist.org/taxa/search?view=list&q=#q"
-			| \G+E
-				q = firstHeading.innerText - \Category:
-				data = await (await fetch "https://api.ebird.org/v2/ref/taxon/find?key=jfekjedvescr&q=#q")json!
-				item = data.find (.name.includes name) or data.0
-				if item
-					location.href = "https://ebird.org/species/#{item.code}"
-				else
-					@notify "Không tìm thấy trên ebird.org"
+					document.querySelector \#firstHeading .innerText .replace \Category: ""
+				switch combo
+				| \G
+					location.href = "https://google.com/search?tbm=isch&q=#q"
+				| \G+I
+					location.href = "https://inaturalist.org/taxa/search?view=list&q=#q"
+				| \G+E
+					data = await (await fetch "https://api.ebird.org/v2/ref/taxon/find?key=jfekjedvescr&q=#q")json!
+					item = data.find (.name.includes name) or data.0
+					if item
+						location.href = "https://ebird.org/species/#{item.code}"
+					else
+						@notify "Không tìm thấy trên ebird.org"
+				| \G+H
+					[genus, species] = q.split " "
+					location.href = "https://fishbase.us/photos/ThumbnailsSummary.php?Genus=#genus&Species=#species"
+				| \G+S
+					q = q.toLowerCase!replace /\ /g \-
+					location.href = "https://www.seriouslyfish.com/species/#q"
 			| \I+U
 				if blob = await @readCopiedImgBlob!
 					base64 = await @readAsBase64 blob
-					await @uploadImgur base64, \base64
+					await @uploadImgur do
+						image: base64
+						type: \base64
 			| \I+A
 				@getImgurAlbum!
 			| \I+T
@@ -1371,6 +1398,11 @@ App =
 							@notify "#{cfgs[key]}: #val"
 					else
 						@notify "Key '#key' không hợp lệ"
+			| \Delete
+				if t.imgurEdit
+					usp = new URLSearchParams location.search
+					id = usp.get \_taxonId
+					location.href = "https://imgur.com/#id?_taxonDelete=1"
 			| \ArrowLeft
 				if el = document.querySelector \.nav-button
 					el.click!

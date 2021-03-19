@@ -1,12 +1,14 @@
 urlOpens = []
 urlOpensIndex = 0
 urlOpensTabIds = {}
+urlOpensOpenerTabId = 0
 
 createUrlOpenTab = (active) ~>
 	urlOpen = urlOpens[urlOpensIndex++]
 	chrome.tabs.create do
-		active: active
 		url: urlOpen
+		active: active
+		openerTabId: urlOpensOpenerTabId
 		(tab) !~>
 			urlOpensTabIds[tab.id] = yes
 
@@ -24,6 +26,7 @@ chrome.runtime.onMessage.addListener (req, sender, res) !~>
 		urlOpens := req.urls
 		urlOpensIndex := 0
 		urlOpensTabIds := {}
+		urlOpensOpenerTabId := sender.tab.id
 		for i til 10
 			if urlOpensIndex < urlOpens.length
 				createUrlOpenTab not i
@@ -34,6 +37,7 @@ chrome.runtime.onMessage.addListener (req, sender, res) !~>
 		urlOpens := []
 		urlOpensIndex := 0
 		urlOpensTabIds := {}
+		urlOpensOpenerTabId := 0
 
 chrome.tabs.onRemoved.addListener (tabId, removeInfo) !~>
 	if urlOpensTabIds[tabId]
@@ -43,3 +47,4 @@ chrome.tabs.onRemoved.addListener (tabId, removeInfo) !~>
 			urlOpens := []
 			urlOpensIndex := 0
 			urlOpensTabIds := {}
+			urlOpensOpenerTabId := 0

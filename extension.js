@@ -10,8 +10,9 @@
 		inaturalist: /inaturalist\.(org|ca)/.test(host),
 		biolib: /biolib\.cz/.test(host),
 		bugguide: /bugguide\.net/.test(host),
-		fishbase: /fishbase\.se/.test(host),
-		ebird: /ebird\.org/.test(host)
+		fishbase: /fishbase\.(us|se)/.test(host),
+		ebird: /ebird\.org/.test(host),
+		seriouslyfish: /seriouslyfish\.com/.test(host)
 	}
 	t.wikiPage = t.wikipedia || t.wikicommons || t.wikispecies
 	t.wiki = t.wikiPage || t.wikiImg

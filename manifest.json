@@ -10,6 +10,7 @@
 		],
 		"exclude_matches": [
 			"*://localhost/*",
+			"*://*.wikipedia.org/w/api.php?*",
 			"*://taxon.now.sh/*",
 			"*://taxon.vercel.app/*",
 			"*://taxon.tiencoffee.vercel.app/*"

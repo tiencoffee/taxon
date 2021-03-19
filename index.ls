@@ -9,10 +9,10 @@ data /= \\n
 tree = [0 \Organism no \/Sinh_vật [] "Sinh vật"]
 refs = [tree]
 headRegex = /^(\t*)(.+?)(\*)?( .+)?$/
-tailRegex = /^([/:@%~^+?]|https?:\/\/|[a-zA-Z\d]{7}( [;|]|$))/
-inaturalistRegex = /^:(\d+)([epJEPu]?)$/
+tailRegex = /^([-/:@%~^+?]|https?:\/\/)/
+inaturalistRegex = /^(:?)(\d+)([epJEPu]?)$/
 inaturalistExts = "": \jpg e: \jpeg p: \png J: \JPG E: \JPEG P: \PNG u: ""
-bugguideRegex = /^~([A-Z\d]+)([r]?)$/
+bugguideRegex = /^([A-Z\d]+)([r]?)$/
 bugguideTypes = "": \cache r: \raw
 lines = []
 index = -1
@@ -54,6 +54,7 @@ for line in data
 	[head, text, tail] = line.split " # "
 	[, lv, name, ex, disam] = headRegex.exec head
 	lv = lv.length + 1
+	# continue if lv > 20
 	name = " " if name is \_
 	if disam
 		disam =
@@ -74,36 +75,42 @@ for line in data
 					[src, captn] = imgg.split " ; "
 					unless src is \?
 						captn = void if captn is \.
-						switch src.0
+						key = src.0
+						src .= substring 1
+						switch key
+						| \-
+							src = "https://i.imgur.com/#{src}m.png"
 						| \/
-							if src.1 is \/
+							if src.0 is \/
 								type = \en
-								src = src.substring 1
+								src .= substring 1
 							else
 								type = \commons
-							src = src.1 + src
-							src = "https://upload.wikimedia.org/wikipedia/#type/thumb/#src/320px-#{src.substring 5}"
+							src = "https://upload.wikimedia.org/wikipedia/#type/thumb/#{src.0}/#src/320px-..webp"
 						| \:
-							[, src, ext] = inaturalistRegex.exec src
+							[, host, src, ext] = inaturalistRegex.exec src
+							host = host and \inaturalist-open-data.s3.amazonaws.com or \static.inaturalist.org
 							ext = inaturalistExts[ext]
-							src = "https://static.inaturalist.org/photos/#src/medium.#ext"
+							src = "https://#host/photos/#src/medium.#ext"
 						| \@
-							src = "https://live.staticflickr.com/#{src.substring 1}_n.jpg"
+							src = "https://live.staticflickr.com/#{src}_n.jpg"
 						| \%
-							src = "https://www.biolib.cz/IMG/GAL/#{src.substring 1}.jpg"
+							src = "https://www.biolib.cz/IMG/GAL/#src.jpg"
 						| \~
 							[, src, type] = bugguideRegex.exec src
 							type = bugguideTypes[type]
 							src = "https://bugguide.net/images/#type/#{src.substring 0 3}/#{src.substring 3 6}/#src.jpg"
 						| \^
-							src =
-								if src.1 is \^ => "https://fishbase.se/tools/UploadPhoto/uploads/#{src.substring 2}.jpg"
-								else "https://fishbase.se/images/species/#{src.substring 1}.jpg"
+							if src.0 is \^
+								path = \tools/UploadPhoto/uploads
+								src .= substring 1
+							else
+								path = \images/species
+							src = "https://fishbase.us/#path/#src.jpg"
 						| \+
-							src = "https://cdn.download.ams.birds.cornell.edu/api/v1/asset/#{src.substring 1}1/320"
+							src = "https://cdn.download.ams.birds.cornell.edu/api/v1/asset/#{src}1/320"
 						else
-							unless /^https?:\/\//test src
-								src = "https://i.imgur.com/#{src}m.png"
+							src .= replace /^ttps?:/ ""
 						infos.img.count++
 						{src, captn}
 	node = [lv, name, ex, disam,, text, imgs]
@@ -160,9 +167,12 @@ addNode = (node, parentLv, parentName, extinct, chrs, first, last, nextSiblExtin
 	if childs
 		line.childs = []
 		chrs += "  "repeat(lvRange) + (last and "  " or (if extinct or nextSiblExtinct => " ╏" else " ┃"))
-		if lv < 31 or lteSpecies
+		if lv < 32 or lteSpecies
 			if name not in [\? " "]
-				parentName = fullName or name
+				if lv is 31
+					parentName = "#parentName (#name)"
+				else
+					parentName = fullName or name
 			else if lv is 30
 				parentName = \" + parentName + \"
 		lastIndex = childs.length - 1
@@ -242,6 +252,7 @@ App =
 							l: biolib
 							h: fishbase
 							e: ebird
+							s: seriouslyfish
 							n: inaturalist (mặc định)
 						""" \n
 						if action
@@ -258,20 +269,6 @@ App =
 			@len = Math.ceil(innerHeight / lineH) + 1
 			@onscrollScroll!
 			m.redraw!
-
-	goLine: (start = @start, noScroll) !->
-		start ?= +localStorage.taxonStart or 0
-		if start < 0
-			start = 0
-		else if start > lines.length - @len + 1
-			start = lines.length - @len + 1
-		localStorage.taxonStart = start
-		@lines = lines.slice start, start + @len
-		@start = start
-		unless noScroll
-			scrollEl.scrollTop = start * lineH
-		presEl.style.transform = "translateY(#{scrollEl.scrollTop}px)"
-		m.redraw!
 
 	getRankName: (lv) ->
 		@chrsRanks.find (.2 > lv) .0
@@ -372,8 +369,11 @@ App =
 				| code is \KeyL => \l
 				| code is \KeyH => \h
 				| code is \KeyE => \e
+				| code is \KeyS => \s
 				| code is \KeyN => \n
 				else @rightClickAction
+			text = name.split " " .0
+			await navigator.clipboard.writeText text
 			switch action
 			| \g
 				window.open "https://google.com/search?tbm=isch&q=#name" \_blank
@@ -383,14 +383,18 @@ App =
 				window.open "https://www.biolib.cz/en/formsearch/?string=#name&searchgallery=1&action=execute"
 			| \h
 				[genus, species] = name.split " "
-				window.open "https://fishbase.se/photos/ThumbnailsSummary.php?Genus=#genus&Species=#species" \_blank
+				if species
+					window.open "https://fishbase.us/photos/ThumbnailsSummary.php?Genus=#genus&Species=#species" \_blank
+				else
+					window.open "http://fishbase.us/Nomenclature/ValidNameList.php?syng=#genus&crit2=CONTAINS&crit1=EQUAL"
 			| \e
 				data = await (await fetch "https://api.ebird.org/v2/ref/taxon/find?key=jfekjedvescr&q=#name")json!
 				item = data.find (.name.includes name) or data.0
 				window.open "https://ebird.org/species/#{item.code}" if item
+			| \s
+				name = name.toLowerCase!replace /\ /g \-
+				window.open "https://www.seriouslyfish.com/species/#name"
 			else
-				text = name.split " " .0
-				await navigator.clipboard.writeText text
 				window.open "https://inaturalist.org/taxa/search?view=list&q=#name"
 
 	mouseleaveName: !->
@@ -450,11 +454,8 @@ App =
 						fn: !~>
 							if count++ < 120
 								rect = popupEl.getBoundingClientRect!
-								oldWidth = width
-								width := rect.width - 16
 								if rect.height > innerHeight - 8
 									width += 8
-								unless width is oldWidth
 									m.redraw.sync!
 									@popper.forceUpdate!
 			try
@@ -469,7 +470,7 @@ App =
 					config: (@xhr) !~>
 				if data.type is \standard and data.extract_html
 					summary = data.extract_html.replace /\n+/g " "
-					summary = /<p>.+?<\/p>/uexec summary .0
+					summary = /<p>(.+?)<\/p>/uexec summary .0
 				else throw
 				# imgs = [src: data.thumbnail.source] if data.thumbnail and not line.imgs
 			catch
