@@ -254,7 +254,7 @@ App =
 							e: ebird
 							s: seriouslyfish
 							n: inaturalist (mặc định)
-						""" \n
+						""" @rightClickAction
 						if action
 							@rightClickAction = action
 							localStorage.taxonRightClickAction = action
