@@ -340,6 +340,7 @@ App =
 			* name: \superspecies
 				prefixes:
 					\super-?species
+					\complex
 					"liên loài"
 				combo: \9+8
 			* name: \species
@@ -951,27 +952,32 @@ App =
 						else
 							opts.link? target, link
 				textEl = null
-				if el = target.querySelector ":scope> a:not([data-excl])"
-					if el.nextSibling?textContent.0 is \:
-						textEl = el
 				unless textEl
-					if el = target.querySelector ":scope> i:first-child"
+					if el = target.querySelector ':scope> a> .toctext'
 						if el.innerText.trim!0 is /[A-Z]/
 							textEl = el
 				unless textEl
-					if el = target.querySelector ":scope> i> a:not([data-excl])"
+					if el = target.querySelector ':scope> a:not([data-excl])'
+						if el.nextSibling?textContent.0 is \:
+							textEl = el
+				unless textEl
+					if el = target.querySelector ':scope> i:first-child'
 						if el.innerText.trim!0 is /[A-Z]/
 							textEl = el
 				unless textEl
-					if el = target.querySelector ":scope> b> a:not([data-excl])"
+					if el = target.querySelector ':scope> i> a:not([data-excl])'
 						if el.innerText.trim!0 is /[A-Z]/
 							textEl = el
 				unless textEl
-					if el = target.querySelector ":scope> i"
+					if el = target.querySelector ':scope> b> a:not([data-excl])'
+						if el.innerText.trim!0 is /[A-Z]/
+							textEl = el
+				unless textEl
+					if el = target.querySelector ':scope> i'
 						if el.innerText.trim!
 							textEl = el
 				unless textEl
-					if el = target.querySelector ":scope> a:not([data-excl])"
+					if el = target.querySelector ':scope> a:not([data-excl])'
 						textEl = el
 				if textEl
 					if textEl.localName is \i and el = textEl.nextSibling
@@ -1001,18 +1007,21 @@ App =
 				(?:subsp\.\s)?
 				([a-z-]{2,})
 			//
-			speciesRegex = /^([A-Z][a-z]+|[A-Z]\.)\s([a-z-]{2,})/
+			subspeciesNameRegex = /^[a-z]{2,}$/
+			speciesRegex = /^[A-Z]([a-z]+|\.)\s([A-Z]([a-z]+|\.)\s)?([a-z-]{2,})/
 			otherRankRegex = /^([A-Z][a-z]+)/
 			if rank
 				switch
 				| rank.lv is 35
 					if matched = subspeciesRegex.exec text
 						text = matched.3
+					else if matched = subspeciesNameRegex.exec text
+						text = matched.0
 					else
 						text = opts.notMatchText
 				| rank.lv is 34
 					if matched = speciesRegex.exec text
-						text = matched.2
+						text = matched.4
 					else
 						text = opts.notMatchText
 				| @regexes.incSedis.test text
@@ -1030,7 +1039,7 @@ App =
 					text = matched.3
 					tab = @ranks.subspecies.tab
 				| matched = speciesRegex.exec text
-					text = matched.2
+					text = matched.4
 					tab = @ranks.species.tab
 				| matched = otherRankRegex.exec text
 					text = matched.1

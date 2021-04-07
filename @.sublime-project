@@ -5,8 +5,10 @@
 		"folder_exclude_patterns": []
 	}],
 	"settings": {
-		"font_face": "Dejavu Sans Mono",
-		"font_size": 9,
+		"font_face": "Monoid",
+		"font_size": 8,
+		// "font_face": "Dejavu Sans Mono",
+		// "font_size": 9,
 		// "font_face": "Verdana",
 		// "font_size": 9,
 		// "tab_size": 3,

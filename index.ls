@@ -102,11 +102,11 @@ for line in data
 							src = "https://bugguide.net/images/#type/#{src.substring 0 3}/#{src.substring 3 6}/#src.jpg"
 						| \^
 							if src.0 is \^
-								path = \tools/UploadPhoto/uploads
+								path = \tools/uploadphoto/uploads
 								src .= substring 1
 							else
 								path = \images/species
-							src = "https://fishbase.us/#path/#src.jpg"
+							src = "https://d1iraxgbwuhpbw.cloudfront.net/#path/#src.jpg"
 						| \+
 							src = "https://cdn.download.ams.birds.cornell.edu/api/v1/asset/#{src}1/320"
 						else
