@@ -1335,7 +1335,10 @@ App =
 						.replace /^./ (.toUpperCase!)
 						.replace /-/g " "
 				else
-					document.querySelector \#firstHeading .innerText .replace \Category: ""
+					if args.0
+						q = document.querySelector \.binomial .innerText
+					else
+						q = document.querySelector \#firstHeading .innerText .replace \Category: ""
 				switch combo
 				| \G
 					location.href = "https://google.com/search?tbm=isch&q=#q"
@@ -1347,7 +1350,10 @@ App =
 					if item
 						location.href = "https://ebird.org/species/#{item.code}"
 					else
-						@notify "Không tìm thấy trên ebird.org"
+						if args.0
+							@notify "Không tìm thấy trên ebird.org"
+						else
+							doCombo \G+E,,, [yes]
 				| \G+H
 					[genus, species] = q.split " "
 					location.href = "https://fishbase.us/photos/ThumbnailsSummary.php?Genus=#genus&Species=#species"
@@ -1382,7 +1388,7 @@ App =
 						m \._col3._mb2 data.ClientLimit
 						m \._col9._mb2 "Giới hạn ứng dụng còn lại"
 						m \._col3._mb2 data.ClientRemaining
-			| \W+O
+			| \W+P
 				location.href = \https://en.wikipedia.org/wiki/Special:Preferences
 			| \W+E
 				location.href = document.querySelector '#ca-ve-edit a' .href

@@ -14,17 +14,18 @@ inaturalistRegex = /^(:?)(\d+)([epJEPu]?)$/
 inaturalistExts = "": \jpg e: \jpeg p: \png J: \JPG E: \JPEG P: \PNG u: ""
 bugguideRegex = /^([A-Z\d]+)([r]?)$/
 bugguideTypes = "": \cache r: \raw
+code = void
 lines = []
 index = -1
 chars = {}
 charsId = 0
-code = void
+maxLv = 99
 numFmt = new Intl.NumberFormat \en
 infoMaxLv = 2
 infoLv = +localStorage.taxonInfoLv
 infos =
 	taxon:
-		label: "Tổng số taxon"
+		label: "Tổng số mục"
 		lv: 1
 	family:
 		label: "Tổng số họ"
@@ -47,7 +48,6 @@ infos =
 		lv: 1
 for , info of infos
 	info.lv ?= infoMaxLv
-	info.count = 0
 
 for line in data
 	imgs = void
@@ -111,7 +111,6 @@ for line in data
 							src = "https://cdn.download.ams.birds.cornell.edu/api/v1/asset/#{src}1/320"
 						else
 							src .= replace /^ttps?:/ ""
-						infos.img.count++
 						{src, captn}
 	node = [lv, name, ex, disam,, text, imgs]
 	if refs.some (.0 >= lv)
@@ -122,69 +121,81 @@ for line in data
 
 addNode = (node, parentLv, parentName, extinct, chrs, first, last, nextSiblExtinct) !~>
 	[lv, name, ex, disam, childs, text, imgs] = node
-	# if name and name.length is 5 and name isnt /^[? ]$/ and lv < 35
-	# 	console.log name, node
-	extinct = yes if ex
-	if parentLv >= 0
-		lvRange = lv - parentLv - 1
-		if extinct
-			chrs2 = (chrs + if first => "╸╸"repeat(lvRange) + \╸┓ else "  "repeat(lvRange) + " ╏")
-				.replace /\ (?=[╸━┓])/ \╹
-				.replace /┃(?=[━┓])/ \┣
+	if lv <= maxLv
+		# if name and name.length is 5 and name isnt /^[? ]$/ and lv < 35
+		# 	console.log name, node
+		extinct = yes if ex
+		if parentLv >= 0
+			lvRange = lv - parentLv - 1
+			if extinct
+				chrs2 = (chrs + if first => "╸╸"repeat(lvRange) + \╸┓ else "  "repeat(lvRange) + " ╏")
+					.replace /\ (?=[╸━┓])/ \╹
+					.replace /┃(?=[━┓])/ \┣
+			else
+				chrs2 = (chrs + if first => "━━"repeat(lvRange) + \━┓ else "  "repeat(lvRange) + " ┃")
+					.replace /\ (?=[╸━┓])/ \┗	
+					.replace /[┃╏](?=[━┓])/ \┣
 		else
-			chrs2 = (chrs + if first => "━━"repeat(lvRange) + \━┓ else "  "repeat(lvRange) + " ┃")
-				.replace /\ (?=[╸━┓])/ \┗	
-				.replace /[┃╏](?=[━┓])/ \┣
-	else
-		chrs2 = " ┃"
-	if chars[chrs2]?
-		chrs2 = chars[chrs2]
-	else
-		chrs2 = chars[chrs2] = charsId++
-	lteSpecies = lv > 34
-	if lteSpecies
-		fullName = "#parentName #name"
-		unless childs
-			infos.speciesSubsp.count++
-			infos.speciesSubspHasImg.count++ if imgs
-			infos.speciesSubspHasViName.count++ if text
-			infos.speciesSubspExtinct.count++ if extinct
-	else if lv is 30
-		infos.genus.count++
-	else if lv is 25
-		infos.family.count++
-	line =
-		index: ++index
-		lv: lv
-		name: name
-		chrs: chrs2
-	line.text? = text
-	line.imgs? = imgs
-	line.extinct? = extinct
-	line.disam? = disam
-	line.fullName? = fullName
-	lines.push line
-	if childs
-		line.childs = []
-		chrs += "  "repeat(lvRange) + (last and "  " or (if extinct or nextSiblExtinct => " ╏" else " ┃"))
-		if lv < 32 or lteSpecies
-			if name not in [\? " "]
-				if lv is 31
-					parentName = "#parentName (#name)"
-				else
-					parentName = fullName or name
-			else if lv is 30
-				parentName = \" + parentName + \"
-		lastIndex = childs.length - 1
-		for child, i in childs
-			addNode child, lv, parentName, extinct, chrs, not i, i is lastIndex, childs[i + 1]?2
+			chrs2 = " ┃"
+		if chars[chrs2]?
+			chrs2 = chars[chrs2]
+		else
+			chrs2 = chars[chrs2] = charsId++
+		lteSpecies = lv > 34
+		if lteSpecies
+			fullName = "#parentName #name"
+			unless childs
+				infos.speciesSubsp.count++
+				infos.speciesSubspHasImg.count++ if imgs
+				infos.speciesSubspHasViName.count++ if text
+				infos.speciesSubspExtinct.count++ if extinct
+		else if lv is 30
+			infos.genus.count++
+		else if lv is 25
+			infos.family.count++
+		line =
+			index: ++index
+			lv: lv
+			name: name
+			chrs: chrs2
+		line.text? = text
+		if imgs
+			line.imgs = imgs
+			infos.img.count += imgs.length
+		line.extinct? = extinct
+		line.disam? = disam
+		line.fullName? = fullName
+		lines.push line
+		if childs
+			line.childs = []
+			chrs += "  "repeat(lvRange) + (last and "  " or (if extinct or nextSiblExtinct => " ╏" else " ┃"))
+			if lv < 32 or lteSpecies
+				if name not in [\? " "]
+					if lv is 31
+						parentName = "#parentName (#name)"
+					else
+						parentName = fullName or name
+				else if lv is 30
+					parentName = \" + parentName + \"
+			lastIndex = childs.length - 1
+			for child, i in childs
+				addNode child, lv, parentName, extinct, chrs, not i, i is lastIndex, childs[i + 1]?2
 
-addNode tree, -1 "" no "" yes yes
-chars = Object.keys chars
-infos.taxon.count = lines.length
-infos.speciesSubspExists.count = infos.speciesSubsp.count - infos.speciesSubspExtinct.count
-for , info of infos
-	info.count = numFmt.format info.count
+parse = !->
+	lines := []
+	index := -1
+	chars := {}
+	charsId := 0
+	for , info of infos
+		info.count = 0
+	addNode tree, -1 "" no "" yes yes
+	chars := Object.keys chars
+	infos.taxon.count = lines.length
+	infos.speciesSubspExists.count = infos.speciesSubsp.count - infos.speciesSubspExtinct.count
+	for , info of infos
+		info.count = numFmt.format info.count
+
+parse!
 
 App =
 	oninit: !->
@@ -218,11 +229,12 @@ App =
 	oncreate: !->
 		heightEl.style.height = lines.length * lineH + \px
 		window.onkeydown = (event) !~>
-			unless event.repeat
+			unless event.repeat or event.ctrlKey or event.altKey
+				hasntFocus = document.activeElement is document.body
 				{code} := event
 				switch code
 				| \KeyF
-					if document.activeElement is document.body
+					if hasntFocus
 						@find!
 						event.preventDefault!
 					if event.ctrlKey
@@ -238,26 +250,53 @@ App =
 							@toggleFindCase!
 							event.preventDefault!
 				| \KeyI
-					if document.activeElement is document.body
+					if hasntFocus
 						val = event.shiftKey and 2 or 1
 						infoLv := if infoLv and infoLv is val => 0 else val
 						localStorage.taxonInfoLv = infoLv
 						m.redraw!
 				| \KeyA
-					if document.activeElement is document.body
+					if hasntFocus
 						action = prompt """
 							Nhập hành động khi bấm chuột phải:
-							g: google
-							b: bugguide
-							l: biolib
-							h: fishbase
-							e: ebird
-							s: seriouslyfish
-							n: inaturalist (mặc định)
+							g) google
+							b) bugguide
+							l) biolib
+							h) fishbase
+							e) ebird
+							s) seriouslyfish
+							n) inaturalist (mặc định)
 						""" @rightClickAction
 						if action
 							@rightClickAction = action
 							localStorage.taxonRightClickAction = action
+				| \KeyR
+					if hasntFocus
+						lv = +prompt """
+							Rank tối đa được hiển thị:
+							1) vực                  2) giới               3) phân giới         4) thứ giới
+							5) liên ngành       6) ngành          7) phân ngành     8) thứ ngành
+							9) tiểu ngành      10) liên lớp       11) lớp                 12) phân lớp
+							13) thứ lớp          14) tiểu lớp      15) đoàn              16) liên đội
+							17) đội                18) tổng bộ      19) liên bộ            20) bộ
+							21) phân bộ         22) thứ bộ       23) tiểu bộ           24) liên họ
+							25) họ                  26) phân họ     27) liên tông        28) tông
+							29) phân tông     30) chi              31) phân chi         32) mục
+							33) loạt                34) liên loài      35) loài                 36) phân loài
+							37) thứ                 38) dạng
+						"""
+						if lv
+							maxLv := lv
+							@lines = []
+							{scrollTop} = scrollEl
+							parse!
+							heightEl.style.height = lines.length * lineH + \px
+							@onscrollScroll!
+							m.redraw.sync!
+							scrollEl.style.scrollBehavior = ""
+							scrollEl.scrollTop = 0
+							scrollEl.style.scrollBehavior = \smooth
+							scrollEl.scrollTop = scrollTop
 				| \Escape
 					if @finding
 						@closeFind!
@@ -469,8 +508,7 @@ App =
 					background: yes
 					config: (@xhr) !~>
 				if data.type is \standard and data.extract_html
-					summary = data.extract_html.replace /\n+/g " "
-					summary = /<p>(.+?)<\/p>/uexec summary .0
+					summary = /<p>(.+?)<\/p>/uexec data.extract_html .0 .replace /\n+/g " "
 				else throw
 				# imgs = [src: data.thumbnail.source] if data.thumbnail and not line.imgs
 			catch

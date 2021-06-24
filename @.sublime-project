@@ -5,8 +5,12 @@
 		"folder_exclude_patterns": []
 	}],
 	"settings": {
-		"font_face": "Monoid",
-		"font_size": 8,
+		"font_face": "JetBrains Mono NL",
+		"font_size": 10,
+		// "font_face": "Mononoki",
+		// "font_size": 11,
+		// "font_face": "Monoid",
+		// "font_size": 8,
 		// "font_face": "Dejavu Sans Mono",
 		// "font_size": 9,
 		// "font_face": "Verdana",
