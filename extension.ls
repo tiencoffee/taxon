@@ -1336,9 +1336,9 @@ App =
 						.replace /-/g " "
 				else
 					if args.0
-						q = document.querySelector \.binomial .innerText
-					else
 						q = document.querySelector \#firstHeading .innerText .replace \Category: ""
+					else
+						q = document.querySelector \.binomial ?.innerText
 				switch combo
 				| \G
 					location.href = "https://google.com/search?tbm=isch&q=#q"
@@ -1391,7 +1391,7 @@ App =
 			| \W+P
 				location.href = \https://en.wikipedia.org/wiki/Special:Preferences
 			| \W+E
-				location.href = document.querySelector '#ca-ve-edit a' .href
+				location.href = document.querySelector '#ca-ve-edit a,#ca-edit a' .href
 			| \W+H
 				location.href = document.querySelector '#ca-history a' .href
 			| \W+M

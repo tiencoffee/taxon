@@ -5,8 +5,10 @@
 		"folder_exclude_patterns": []
 	}],
 	"settings": {
+		// "font_face": "SF Mono",
+		// "font_size": 11,
 		"font_face": "JetBrains Mono NL",
-		"font_size": 10,
+		"font_size": 11,
 		// "font_face": "Mononoki",
 		// "font_size": 11,
 		// "font_face": "Monoid",
@@ -20,7 +22,7 @@
 		// "font_size": 10,
 		// "tab_size": 4,
 		// "font_face": "InputMonoNarrow",
-		// "font_size": 9,
+		// "font_size": 11,
 		// "tab_size": 2,
 		// "font_face": "Schoolbell",
 		// "font_size": 12,

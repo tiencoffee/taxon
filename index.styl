@@ -1,26 +1,39 @@
-@import "https://cdn.jsdelivr.net/gh/tiencoffee/fonts/Monoid/Monoid.css"
-@import "https://fonts.googleapis.com/css?family=Verdana:400,700"
+// @import "https://cdn.jsdelivr.net/gh/tiencoffee/fonts/Monoid/Monoid.css"
+// @import "https://fonts.googleapis.com/css?family=Verdana:400,700"
 // @import "https://fonts.googleapis.com/css?family=Roboto:400,700"
+@import "https://fonts.googleapis.com/css?family=Roboto Condensed:400,700"
 // @import "https://fonts.googleapis.com/css?family=Schoolbell:400,700"
 @font-face
 	font-family "DejaVuSansMono"
 	src url("https://cdn.jsdelivr.net/gh/tiencoffee/fonts/DejaVuSansMono.woff2")
-$fontFamily = unquote("'Monoid',monospace")
-$fontSize = 8pt
-$popupFontFamily = unquote("'Verdana',sans-serif")
-$popupFontSize = 9pt
-$lineFontSize = 10pt
-$lineH = 15px
-// $fontFamily = unquote("'Verdana',sans-serif")
+// $fontFamily = unquote("'Monoid',monospace")
+// $fontSize = 8pt
+// $popupFontFamily = unquote("'Verdana',sans-serif")
+// $popupFontSize = 9pt
+// $lineFontSize = 10pt
+// $lineH = 15px
+// $fontFamily = unquote("'Verdana',monospace")
 // $fontSize = 9pt
+// $popupFontFamily = unquote("'Verdana',sans-serif")
+// $popupFontSize = 9pt
 // $lineFontSize = 10pt
 // $lineH = 15px
-// $fontFamily = unquote("'Roboto',sans-serif")
+// $fontFamily = unquote("'Roboto',monospace")
 // $fontSize = 10pt
+// $popupFontFamily = unquote("'Roboto',sans-serif")
+// $popupFontSize = 10pt
 // $lineFontSize = 10pt
 // $lineH = 15px
-// $fontFamily = unquote("'Schoolbell','Roboto Condensed',sans-serif")
+$fontFamily = unquote("'Roboto Condensed',monospace")
+$fontSize = 13pt
+$popupFontFamily = unquote("'Roboto Condensed',sans-serif")
+$popupFontSize = 12pt
+$lineFontSize = 12pt
+$lineH = 19px
+// $fontFamily = unquote("'Schoolbell','Roboto Condensed',monospace")
 // $fontSize = 12pt
+// $popupFontFamily = unquote("'Schoolbell','Roboto Condensed',sans-serif")
+// $popupFontSize = 12pt
 // $lineFontSize = 12pt
 // $lineH = 19px
 body
@@ -174,7 +187,7 @@ body
 	pointer-events none
 #popupBody
 	padding 8px 4px
-	border-radius 8px
+	border-radius 16px
 	display flex
 	flex-direction column
 	background #eee
@@ -185,6 +198,15 @@ body
 	to
 		transform scale(1)
 .popupTwoImg
+	// .popupGender
+	// 	&:first-child
+	// 		.popupPicture
+	// 			border-top-right-radius 0
+	// 			border-bottom-right-radius 0
+	// 	&:last-child
+	// 		.popupPicture
+	// 			border-top-left-radius 0
+	// 			border-bottom-left-radius 0
 	.popupImg
 		max-width 280px
 		max-height 240px
@@ -200,16 +222,15 @@ body
 	margin-top 6px
 	display flex
 	justify-content center
+	column-gap 4px
 .popupGender
 	width 100%
 	display flex
 	flex-direction column
 	align-self stretch
-	&:nth-child(2)
-		margin-left 4px
 .popupPicture
 	position relative
-	border-radius 6px
+	border-radius 12px
 	display flex
 	justify-content center
 	align-items center

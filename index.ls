@@ -3,7 +3,7 @@ localStorage
 	..taxonFindCase ?= \1
 	..taxonInfoLv ?= 1
 	..rightClickAction ?= \n
-lineH = 15
+lineH = 19
 data = await (await fetch \tree.taxon)text!
 data /= \\n
 tree = [0 \Organism no \/Sinh_vật [] "Sinh vật"]
@@ -508,7 +508,7 @@ App =
 					background: yes
 					config: (@xhr) !~>
 				if data.type is \standard and data.extract_html
-					summary = /<p>(.+?)<\/p>/uexec data.extract_html .0 .replace /\n+/g " "
+					summary = /<p>(.+?)<\/p>/su.exec data.extract_html .0 .replace /\n+/g " "
 				else throw
 				# imgs = [src: data.thumbnail.source] if data.thumbnail and not line.imgs
 			catch

@@ -11,9 +11,9 @@
 		"exclude_matches": [
 			"*://localhost/*",
 			"*://*.wikipedia.org/w/api.php?*",
-			"*://taxon.now.sh/*",
 			"*://taxon.vercel.app/*",
-			"*://taxon.tiencoffee.vercel.app/*"
+			"*://taxon.tiencoffee.vercel.app/*",
+			"*://diori.vercel.app/*"
 		],
 		"js": [
 			"libs/livescript.min.js",
